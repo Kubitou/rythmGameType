@@ -1,0 +1,1 @@
+{"version":3,"file":"BeatConverter.d.ts","sourceRoot":"","sources":["../../src/core/BeatConverter.ts"],"names":[],"mappings":"AAAA,qBAAa,aAAa;IACV,OAAO,CAAC,GAAG;IAAU,OAAO,CAAC,MAAM;gBAA3B,GAAG,EAAE,MAAM,EAAU,MAAM,EAAE,MAAM;IAEvD,QAAQ,CAAC,IAAI,EAAE,MAAM,GAAG,MAAM;CAIjC"}
