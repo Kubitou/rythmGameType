@@ -2,17 +2,20 @@ import { Clock } from "./Clock";
 import { Note } from "../core/Note";
 import { Chart } from "../core/ChartTypes";
 import { BeatConverter } from "../core/BeatConverter";
-import { Metronome } from "./Metronome";
+import { TimeEngine } from "./TimeEngine";
+
 
 export class Game{
     private upcomingNotes: Note[] = [];
     private activeNotes: Note[] = [];
+
     private SPAWN_WINDOW: number = 2000;
     private MISS_WINDOW: number = 150;
-    private metronome: Metronome;
+
+    private timeEngine: TimeEngine;
 
     constructor(private clock: Clock, private chart: Chart){
-        this.metronome = new Metronome(clock, chart.bpm, 4);
+        this.timeEngine = new TimeEngine(clock, chart.bpm);
     }
 
     loadChart(){
@@ -36,7 +39,7 @@ export class Game{
         this.clock.advance(dt);
         this.spawnNotes();
         this.despawn();
-        this.metronome.update();
+        this.timeEngine.update();
     }
 
     private spawnNotes() {

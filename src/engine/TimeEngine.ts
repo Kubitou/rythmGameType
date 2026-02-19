@@ -1,6 +1,6 @@
 import { Clock } from "./Clock";
 
-export class Metronome{
+export class TimeEngine{
     private musicalBeat = 0;
     private lastRealTime = 0;
     private lastBeatIndex = -1;
@@ -28,4 +28,6 @@ export class Metronome{
     get currentBeat(){
         return Math.floor(this.musicalBeat);
     }
+
+    
 }
