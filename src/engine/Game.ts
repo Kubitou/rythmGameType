@@ -2,23 +2,24 @@ import { Clock } from "./Clock";
 import { Note } from "../core/Note";
 import { Chart } from "../core/ChartTypes";
 import { BeatConverter } from "../core/BeatConverter";
+import { Metronome } from "./Metronome";
 
 export class Game{
     private upcomingNotes: Note[] = [];
     private activeNotes: Note[] = [];
     private SPAWN_WINDOW: number = 2000;
     private MISS_WINDOW: number = 150;
+    private metronome: Metronome;
 
-    constructor(private clock: Clock){}
+    constructor(private clock: Clock, private chart: Chart){
+        this.metronome = new Metronome(clock, chart.bpm, 4);
+    }
 
-    loadChart(chart: Chart){
-        const converter = new BeatConverter(chart.bpm, chart.offset);
-        
-         //active notes | upcoming notes
-         //0 400 800 | 1000 | 1400 ------
+    loadChart(){
+        const converter = new BeatConverter(this.chart.bpm, this.chart.offset);
         let id = 1;
 
-        for(const chartNote of chart.notes){                   
+        for(const chartNote of this.chart.notes){                   
             const hitTime = converter.beatToMS(chartNote.beat);
             const note = new Note(
                 id++,
@@ -35,6 +36,7 @@ export class Game{
         this.clock.advance(dt);
         this.spawnNotes();
         this.despawn();
+        this.metronome.update();
     }
 
     private spawnNotes() {
@@ -45,7 +47,6 @@ export class Game{
             if (nextNote.hitTime > this.clock.time + this.SPAWN_WINDOW) break;
 
             this.activeNotes.push(this.upcomingNotes.shift()!);
-            this.despawn();
         }
     }
 
@@ -76,5 +77,13 @@ export class Game{
 
     get time():number {
         return this.clock.time;
+    }
+
+    set spawnWindow(spawnWindow: number){
+        this.SPAWN_WINDOW = spawnWindow;
+    }
+
+    set missWindow(missWindow: number){
+        this.MISS_WINDOW = missWindow;
     }
 }

@@ -2,8 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Clock_1 = require("./engine/Clock");
 const Game_1 = require("./engine/Game");
-const clock = new Clock_1.Clock();
-const game = new Game_1.Game(clock);
+const Metronome_1 = require("./engine/Metronome");
 const testChart = {
     bpm: 120,
     offset: 0,
@@ -12,32 +11,28 @@ const testChart = {
         { beat: 1, action: "KATSU", size: "small" },
         { beat: 2, action: "DON", size: "small" },
         { beat: 4, action: "DON", size: "small" },
-        { beat: 5, action: "KATSU", size: "small" },
-        { beat: 6, action: "DON", size: "small" },
-        { beat: 8, action: "DON", size: "small" },
-        { beat: 9, action: "KATSU", size: "small" },
-        { beat: 10, action: "DON", size: "small" },
-        { beat: 12, action: "DON", size: "small" },
-        { beat: 13, action: "KATSU", size: "small" },
-        { beat: 14, action: "DON", size: "small" },
     ]
 };
-game.loadChart(testChart);
+const clock = new Clock_1.Clock();
+const game = new Game_1.Game(clock, testChart);
+// 👇 instanciando metrônomo separado
+const metronome = new Metronome_1.Metronome(clock, testChart.bpm, 4);
+game.loadChart();
 let lastTime = Date.now();
 const interval = setInterval(() => {
     const now = Date.now();
     const dt = now - lastTime;
     lastTime = now;
     game.update(dt);
-    console.clear();
-    console.log("  ");
-    console.log("Upcoming:", game.getUpcomingNotes().map(n => n.hitTime));
-    console.log("Active:", game.getActiveNotes().map(n => n.hitTime));
+    const beatChanged = metronome.update();
     console.log("Tempo:", game.time);
-    // parar após 8 segundos
+    if (beatChanged !== null) {
+        console.log("Beat:", beatChanged);
+        console.log("Measure:", metronome.currentMeasure);
+    }
     if (game.time > 8000) {
         clearInterval(interval);
         console.log("Simulação encerrada.");
     }
-}, 1000);
+}, 100); // 👈 100ms deixa mais realista
 //# sourceMappingURL=main.js.map
