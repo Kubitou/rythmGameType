@@ -3,13 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Note = void 0;
 class Note {
     id;
-    hitTime;
+    hitBeat;
     action;
     size;
     _judged = false;
-    constructor(id, hitTime, action, size) {
+    constructor(id, hitBeat, action, size) {
         this.id = id;
-        this.hitTime = hitTime;
+        this.hitBeat = hitBeat;
         this.action = action;
         this.size = size;
     }

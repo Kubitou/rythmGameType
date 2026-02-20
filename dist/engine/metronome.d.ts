@@ -1,12 +1,8 @@
-import { Clock } from "./Clock";
+import { TimeEngine } from "./TimeEngine";
 export declare class Metronome {
-    private clock;
-    private bpm;
+    private timeEngine;
     private measure;
-    private beatDuration;
-    private lastBeat;
-    constructor(clock: Clock, bpm: number, measure?: number);
-    update(): number | null;
+    constructor(timeEngine: TimeEngine, measure?: number);
     get currentMeasure(): number;
 }
 //# sourceMappingURL=Metronome.d.ts.map
