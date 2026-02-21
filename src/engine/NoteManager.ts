@@ -24,9 +24,8 @@ export class NoteManager{
             if(!next) break;
 
             if(next.hitBeat > currentBeat + this.spawnWindow) break;
-
+            // console.log("spawn: ", next.hitBeat);
             this.activeNotes.push(this.upcomingNotes.shift()!);
-            console.log("Spawn:", next.hitBeat);
         }
     }
 
@@ -36,10 +35,22 @@ export class NoteManager{
             if(!note) break;
 
             if(note.hitBeat + this.missWindow < currentBeat){
-                console.log("Miss:", note.hitBeat);
+                // console.log("despawn: ", note.hitBeat);
                 this.activeNotes.shift();
             }else break;
         }
+    }
+
+    remove(note: Note){
+        const index = this.activeNotes.indexOf(note);
+        if(index !== -1){
+            this.activeNotes.splice(index, 1);
+        }
+    }
+
+    getFirstActiveNote(){
+        if(this.activeNotes.length === 0) return null;
+        return this.activeNotes[0]
     }
 
     get getActiveNotes(){

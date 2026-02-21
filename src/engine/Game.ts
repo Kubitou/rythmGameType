@@ -1,10 +1,10 @@
 import { Clock } from "./Clock";
 import { Note } from "../core/Note";
 import { Chart } from "../core/ChartTypes";
-import { BeatConverter } from "../core/BeatConverter";
 import { TimeEngine } from "./TimeEngine";
 import { Metronome } from "./Metronome";
 import { NoteManager } from "./NoteManager";
+import { Judge } from "./Judge";
 
 
 export class Game{
@@ -14,18 +14,26 @@ export class Game{
     private timeEngine: TimeEngine;
     private metronome: Metronome;
     private noteManager: NoteManager;
+    private judge: Judge;
 
 
     constructor(private clock: Clock, private chart: Chart){
         this.timeEngine = new TimeEngine(clock, chart.bpm);
         this.metronome = new Metronome(this.timeEngine);
 
-
         this.noteManager = new NoteManager(this.SPAWN_WINDOW_BEAT, this.MISS_WINDOW_BEAT);
+        this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
+    }
+
+    handleInput(action: "DON" | "KATSU"){
+        // const note = this.noteManager.getFirstActiveNote();
+        // console.log("FIRST NOTE:", note?.hitBeat);
+        const currentBeat = this.timeEngine.preciseBeat;
+        // console.log("TRY HIT", currentBeat, action);
+        return this.judge.tryHit(currentBeat, action);
     }
 
     loadChart(){
-        const converter = new BeatConverter(this.chart.bpm, this.chart.offset);
         let id = 1;
         let notes: Note[] = [];
 
@@ -48,6 +56,8 @@ export class Game{
         this.noteManager.update(this.timeEngine.currentBeat);
     }
 
-
+    getCurrentBeat(){
+        return this.timeEngine.preciseBeat;
+    }
 
 }

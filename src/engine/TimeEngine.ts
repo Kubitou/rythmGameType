@@ -25,6 +25,10 @@ export class TimeEngine{
         return null;
     }
 
+    get preciseBeat(){
+        return this.musicalBeat;
+    }
+
     get currentBeat(){
         return Math.floor(this.musicalBeat);
     }
