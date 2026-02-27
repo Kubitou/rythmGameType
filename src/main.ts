@@ -3,13 +3,13 @@ import { Game } from "./engine/Game";
 import { Chart } from "./core/ChartTypes";
 
 const chart: Chart = {
-    bpm: 120,
-    offset: 0,
-    notes: [
-        { beat: 2, action: "DON", size: "small" },
-        { beat: 4, action: "KATSU", size: "small" },
-        { beat: 6, action: "DON", size: "small" }
-    ]
+  bpm: 120,
+  offset: 0,
+  notes: [
+    { type: "tap", beat: 2, action: "DON", size: "small" },
+    { type: "tap", beat: 4, action: "KATSU", size: "small" },
+    { type: "tap", beat: 6, action: "DON", size: "small" }
+  ]
 };
 
 const clock = new Clock();

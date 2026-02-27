@@ -6,9 +6,9 @@ const chart = {
     bpm: 120,
     offset: 0,
     notes: [
-        { beat: 2, action: "DON", size: "small" },
-        { beat: 4, action: "KATSU", size: "small" },
-        { beat: 6, action: "DON", size: "small" }
+        { type: "tap", beat: 2, action: "DON", size: "small" },
+        { type: "tap", beat: 4, action: "KATSU", size: "small" },
+        { type: "tap", beat: 6, action: "DON", size: "small" }
     ]
 };
 const clock = new Clock_1.Clock();

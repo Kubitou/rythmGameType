@@ -1,5 +1,5 @@
 import { Clock } from "./Clock";
-import { Note } from "../core/Note";
+import { Note, RollNote, TapNote } from "../core/Note";
 import { Chart } from "../core/ChartTypes";
 import { TimeEngine } from "./TimeEngine";
 import { Metronome } from "./Metronome";
@@ -38,14 +38,27 @@ export class Game{
         let notes: Note[] = [];
 
         for(const chartNote of this.chart.notes){                   
-            const note = new Note(
-                id++,
-                chartNote.beat,
-                chartNote.action,
-                chartNote.size
-            )
-
-            notes.push(note);
+            if(chartNote.type === "tap"){
+                notes.push(
+                    new TapNote(
+                        chartNote.beat,
+                        id++,
+                        chartNote.action,
+                        chartNote.size
+                    )
+                );
+            }
+            if(chartNote.type === "roll"){
+                notes.push(
+                    new RollNote(
+                        chartNote.startBeat,
+                        chartNote.endBeat,
+                        id++,
+                        chartNote.action,
+                        chartNote.size,
+                    )
+                )
+            }
         } 
         this.noteManager.load(notes)
     }

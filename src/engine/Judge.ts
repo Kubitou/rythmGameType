@@ -1,4 +1,4 @@
-import { Note } from "../core/Note";
+import { TapNote } from "../core/Note";
 import { NoteManager } from "./NoteManager";
 import { TimeEngine } from "./TimeEngine";
 
@@ -12,11 +12,19 @@ export class Judge{
         private badWindow: number
     ){}
 
+    private lastInputBeat = -Infinity
+    private inputCooldown = 0.05;
+
     tryHit(currentBeat: number, action: string): Judgment{
         const note = this.noteManager.getFirstActiveNote();
         if(!note) return null;
 
+        if(!(note instanceof TapNote)) return null;
+
         if(note.action !== action) return null;
+
+        if(currentBeat - this.lastInputBeat < this.inputCooldown) return null;
+        this.lastInputBeat = currentBeat;
 
         const delta = currentBeat - note.hitBeat;
 
@@ -44,6 +52,14 @@ export class Judge{
             return "bad";
         }
 
+        note.markJudged();
+        this.noteManager.remove(note);
+        return null;
+    }
+
+    miss(note: TapNote): null{
+        note.markJudged();
+        this.noteManager.remove(note);
         return null;
     }
 }

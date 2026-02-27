@@ -34,8 +34,12 @@ class Game {
         let id = 1;
         let notes = [];
         for (const chartNote of this.chart.notes) {
-            const note = new Note_1.Note(id++, chartNote.beat, chartNote.action, chartNote.size);
-            notes.push(note);
+            if (chartNote.type === "tap") {
+                notes.push(new Note_1.TapNote(chartNote.beat, id++, chartNote.action, chartNote.size));
+            }
+            if (chartNote.type === "roll") {
+                notes.push(new Note_1.RollNote(chartNote.startBeat, chartNote.endBeat, id++, chartNote.action, chartNote.size));
+            }
         }
         this.noteManager.load(notes);
     }

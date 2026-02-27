@@ -1,63 +1,72 @@
-import { Note } from "../core/Note";
+import { Note, TapNote } from "../core/Note";
 
-export class NoteManager{
-    private upcomingNotes: Note[] = [];
-    private activeNotes: Note[] = [];
+export class NoteManager {
+  private upcomingNotes: Note[] = [];
+  private activeNotes: Note[] = [];
+  private expiredNotes: Note[] = [];
 
-    constructor(
-        private spawnWindow: number,
-        private missWindow: number
-    ){}
+  constructor(
+    private spawnWindow: number,
+    private missWindow: number,
+  ) {}
 
-    load(notes: Note[]){
-        this.upcomingNotes = [...notes].sort((a,b) => a.hitBeat - b.hitBeat);
+  load(notes: Note[]) {
+    this.upcomingNotes = [...notes].sort((a, b) => a.startBeat - b.startBeat);
+  }
+
+  update(currentBeat: number) {
+    this.spawn(currentBeat);
+    this.collectExpiredNotes(currentBeat);
+  }
+
+  private spawn(currentBeat: number) {
+    while (true) {
+      const next = this.upcomingNotes[0];
+      if (!next) break;
+
+      if (next.startBeat > currentBeat + this.spawnWindow) break;
+      // console.log("spawn: ", next.hitBeat);
+      this.activeNotes.push(this.upcomingNotes.shift()!);
     }
+  }
 
-    update(currentBeat: number){
-        this.spawn(currentBeat);
-        this.despawn(currentBeat);
-    }
+  private collectExpiredNotes(currentBeat: number) {
+    while (true) {
+      const note = this.activeNotes[0];
+      if (!note) break;
 
-    private spawn(currentBeat: number){
-        while(true){
-            const next = this.upcomingNotes[0];
-            if(!next) break;
-
-            if(next.hitBeat > currentBeat + this.spawnWindow) break;
-            // console.log("spawn: ", next.hitBeat);
-            this.activeNotes.push(this.upcomingNotes.shift()!);
+      if ("hitBeat" in note) {
+        if (note.startBeat + this.missWindow < currentBeat) {
+          this.expiredNotes.push(this.activeNotes.shift()!);
+          continue;
         }
+      }
+      break;
     }
+  }
 
-    private despawn(currentBeat: number){
-        while(true){
-            const note = this.activeNotes[0];
-            if(!note) break;
+  drainExpired(): Note[] {
+    const notes = [...this.expiredNotes];
+    this.expiredNotes = [];
+    return notes;
+  }
 
-            if(note.hitBeat + this.missWindow < currentBeat){
-                // console.log("despawn: ", note.hitBeat);
-                this.activeNotes.shift();
-            }else break;
-        }
+  remove(note: Note) {
+    const index = this.activeNotes.indexOf(note);
+    if (index !== -1) {
+      this.activeNotes.splice(index, 1);
     }
+  }
 
-    remove(note: Note){
-        const index = this.activeNotes.indexOf(note);
-        if(index !== -1){
-            this.activeNotes.splice(index, 1);
-        }
-    }
+  getFirstActiveNote(): Note | null {
+    return this.activeNotes.at(0) ?? null;
+  }
 
-    getFirstActiveNote(){
-        if(this.activeNotes.length === 0) return null;
-        return this.activeNotes[0]
-    }
+  get getActiveNotes() {
+    return this.activeNotes;
+  }
 
-    get getActiveNotes(){
-        return this.activeNotes;
-    }
-
-    get getUpcomingNotes(){
-        return this.upcomingNotes;
-    }
+  get getUpcomingNotes() {
+    return this.upcomingNotes;
+  }
 }

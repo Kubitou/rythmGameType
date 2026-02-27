@@ -6,40 +6,47 @@ class NoteManager {
     missWindow;
     upcomingNotes = [];
     activeNotes = [];
+    expiredNotes = [];
     constructor(spawnWindow, missWindow) {
         this.spawnWindow = spawnWindow;
         this.missWindow = missWindow;
     }
     load(notes) {
-        this.upcomingNotes = [...notes].sort((a, b) => a.hitBeat - b.hitBeat);
+        this.upcomingNotes = [...notes].sort((a, b) => a.startBeat - b.startBeat);
     }
     update(currentBeat) {
         this.spawn(currentBeat);
-        this.despawn(currentBeat);
+        this.collectExpiredNotes(currentBeat);
     }
     spawn(currentBeat) {
         while (true) {
             const next = this.upcomingNotes[0];
             if (!next)
                 break;
-            if (next.hitBeat > currentBeat + this.spawnWindow)
+            if (next.startBeat > currentBeat + this.spawnWindow)
                 break;
             // console.log("spawn: ", next.hitBeat);
             this.activeNotes.push(this.upcomingNotes.shift());
         }
     }
-    despawn(currentBeat) {
+    collectExpiredNotes(currentBeat) {
         while (true) {
             const note = this.activeNotes[0];
             if (!note)
                 break;
-            if (note.hitBeat + this.missWindow < currentBeat) {
-                // console.log("despawn: ", note.hitBeat);
-                this.activeNotes.shift();
+            if ("hitBeat" in note) {
+                if (note.startBeat + this.missWindow < currentBeat) {
+                    this.expiredNotes.push(this.activeNotes.shift());
+                    continue;
+                }
             }
-            else
-                break;
+            break;
         }
+    }
+    drainExpired() {
+        const notes = [...this.expiredNotes];
+        this.expiredNotes = [];
+        return notes;
     }
     remove(note) {
         const index = this.activeNotes.indexOf(note);
@@ -48,9 +55,7 @@ class NoteManager {
         }
     }
     getFirstActiveNote() {
-        if (this.activeNotes.length === 0)
-            return null;
-        return this.activeNotes[0];
+        return this.activeNotes.at(0) ?? null;
     }
     get getActiveNotes() {
         return this.activeNotes;

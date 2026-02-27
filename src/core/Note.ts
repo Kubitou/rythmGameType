@@ -1,19 +1,33 @@
-import { NoteAction, NoteSize } from "./ChartTypes";
+import { NoteAction, NoteSize, NoteState } from "./ChartTypes";
 
-export class Note{
+export abstract class Note{
     readonly id: number
-    readonly hitBeat: number
     readonly action: NoteAction
     readonly size: NoteSize
 
-    private _judged = false;
-
-    constructor(id: number, hitBeat: number, action: NoteAction, size: NoteSize){
+    constructor(id: number, action: NoteAction, size: NoteSize){
         this.id = id;
-        this.hitBeat = hitBeat;
         this.action = action;
         this.size = size;
     }
+    
+    abstract get startBeat(): number;
+}
+
+export class TapNote extends Note{
+    constructor(readonly hitBeat: number, 
+        id: number, 
+        action: NoteAction, 
+        size: NoteSize
+    ){
+        super(id, action, size);
+    }
+
+    get startBeat(): number{
+        return this.hitBeat;
+    }
+
+    private _judged = false;
 
     markJudged(){
         this._judged = true;
@@ -22,4 +36,22 @@ export class Note{
     get judged(): boolean {
         return this._judged;
     }
+}
+
+export class RollNote extends Note{
+    constructor(readonly startBeat: number, 
+        readonly endBeat: number, 
+        id: number, 
+        action: NoteAction, 
+        size: NoteSize
+    ){
+        super(id, action, size);
+    }
+
+    private hitCount: number = 0;
+
+    private state: NoteState = "waiting"
+
+
+
 }
