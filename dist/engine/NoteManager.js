@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NoteManager = void 0;
+const Note_1 = require("../core/Note");
 class NoteManager {
     spawnWindow;
     missWindow;
@@ -53,6 +54,14 @@ class NoteManager {
         if (index !== -1) {
             this.activeNotes.splice(index, 1);
         }
+    }
+    getActiveRoll() {
+        for (const note of this.activeNotes) {
+            if (note instanceof Note_1.RollNote && note.isActive) {
+                return note;
+            }
+        }
+        return null;
     }
     getFirstActiveNote() {
         return this.activeNotes.at(0) ?? null;

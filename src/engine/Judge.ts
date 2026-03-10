@@ -2,7 +2,7 @@ import { TapNote } from "../core/Note";
 import { NoteManager } from "./NoteManager";
 import { TimeEngine } from "./TimeEngine";
 
-type Judgment = "perfect" | "good" | "bad" | null;
+type Judgment = "perfect" | "good" | "bad" | "miss";
 
 export class Judge{
     constructor(
@@ -17,20 +17,20 @@ export class Judge{
 
     tryHit(currentBeat: number, action: string): Judgment{
         const note = this.noteManager.getFirstActiveNote();
-        if(!note) return null;
+        if(!note) return "miss";
 
-        if(!(note instanceof TapNote)) return null;
+        if(!(note instanceof TapNote)) return "miss";
 
-        if(note.action !== action) return null;
+        if(note.action !== action) return "miss";
 
-        if(currentBeat - this.lastInputBeat < this.inputCooldown) return null;
+        if(currentBeat - this.lastInputBeat < this.inputCooldown) return "miss";
         this.lastInputBeat = currentBeat;
 
         const delta = currentBeat - note.hitBeat;
 
         // console.log("DELTA:", delta);
 
-        if(delta < -this.badWindow) return null;
+        if(delta < -this.badWindow) return "miss";
 
         const abs = Math.abs(delta);
 
@@ -54,12 +54,12 @@ export class Judge{
 
         note.markJudged();
         this.noteManager.remove(note);
-        return null;
+        return "miss";
     }
 
-    miss(note: TapNote): null{
+    miss(note: TapNote): "miss"{
         note.markJudged();
         this.noteManager.remove(note);
-        return null;
+        return "miss";
     }
 }

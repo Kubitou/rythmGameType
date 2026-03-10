@@ -1,4 +1,4 @@
-import { Note, TapNote } from "../core/Note";
+import { Note, RollNote, TapNote } from "../core/Note";
 
 export class NoteManager {
   private upcomingNotes: Note[] = [];
@@ -56,6 +56,15 @@ export class NoteManager {
     if (index !== -1) {
       this.activeNotes.splice(index, 1);
     }
+  }
+
+  getActiveRoll(): RollNote | null{
+    for(const note of this.activeNotes){
+      if(note instanceof RollNote && note.isActive){
+        return note;
+      }
+    }
+    return null;
   }
 
   getFirstActiveNote(): Note | null {

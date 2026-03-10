@@ -1,4 +1,4 @@
-import { NoteAction, NoteSize, NoteState } from "./ChartTypes";
+import { NoteAction, NoteSize, NoteState, RollHitResult } from "./ChartTypes";
 
 export abstract class Note{
     readonly id: number
@@ -15,7 +15,8 @@ export abstract class Note{
 }
 
 export class TapNote extends Note{
-    constructor(readonly hitBeat: number, 
+    constructor(
+        readonly hitBeat: number, 
         id: number, 
         action: NoteAction, 
         size: NoteSize
@@ -39,7 +40,8 @@ export class TapNote extends Note{
 }
 
 export class RollNote extends Note{
-    constructor(readonly startBeat: number, 
+    constructor(
+        readonly startBeat: number, 
         readonly endBeat: number, 
         id: number, 
         action: NoteAction, 
@@ -53,5 +55,42 @@ export class RollNote extends Note{
     private state: NoteState = "waiting"
 
 
+    updateRoll(currentBeat: number){
+        if(this.state === "finished") return;
+        
+        if(currentBeat >= this.startBeat && currentBeat <= this.endBeat){
+            this.state = "active";
+            return;
+        }
+
+        if(currentBeat > this.endBeat){
+            this.state = "finished"
+        }
+
+    }
+
+    tryHit(action: NoteAction): RollHitResult | null{
+        if(this.state !== "active") return null;
+        if(action !== this.action) return null;
+
+        this.hitCount++;
+        return "roll-hit";
+    }
+
+    get numberOfHits(){
+        return this.hitCount;
+    }
+
+    get rollState(){
+        return this.state;
+    }
+
+    get isActive(){
+        return this.state === "active";
+    }
+
+    get isFinished(){
+        return this.state === "finished";
+    }
 
 }

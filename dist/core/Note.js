@@ -40,6 +40,37 @@ class RollNote extends Note {
     }
     hitCount = 0;
     state = "waiting";
+    updateRoll(currentBeat) {
+        if (this.state === "finished")
+            return;
+        if (currentBeat >= this.startBeat && currentBeat <= this.endBeat) {
+            this.state = "active";
+            return;
+        }
+        if (currentBeat > this.endBeat) {
+            this.state = "finished";
+        }
+    }
+    tryHit(action) {
+        if (this.state !== "active")
+            return null;
+        if (action !== this.action)
+            return null;
+        this.hitCount++;
+        return "roll-hit";
+    }
+    get numberOfHits() {
+        return this.hitCount;
+    }
+    get rollState() {
+        return this.state;
+    }
+    get isActive() {
+        return this.state === "active";
+    }
+    get isFinished() {
+        return this.state === "finished";
+    }
 }
 exports.RollNote = RollNote;
 //# sourceMappingURL=Note.js.map

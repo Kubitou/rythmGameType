@@ -18,18 +18,18 @@ class Judge {
     tryHit(currentBeat, action) {
         const note = this.noteManager.getFirstActiveNote();
         if (!note)
-            return null;
+            return "miss";
         if (!(note instanceof Note_1.TapNote))
-            return null;
+            return "miss";
         if (note.action !== action)
-            return null;
+            return "miss";
         if (currentBeat - this.lastInputBeat < this.inputCooldown)
-            return null;
+            return "miss";
         this.lastInputBeat = currentBeat;
         const delta = currentBeat - note.hitBeat;
         // console.log("DELTA:", delta);
         if (delta < -this.badWindow)
-            return null;
+            return "miss";
         const abs = Math.abs(delta);
         if (abs <= this.perfectWindow) {
             note.markJudged();
@@ -48,12 +48,12 @@ class Judge {
         }
         note.markJudged();
         this.noteManager.remove(note);
-        return null;
+        return "miss";
     }
     miss(note) {
         note.markJudged();
         this.noteManager.remove(note);
-        return null;
+        return "miss";
     }
 }
 exports.Judge = Judge;
