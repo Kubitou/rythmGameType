@@ -15,12 +15,15 @@ const chart = {
             size: "small",
         },
         { beat: 8, action: "DON", size: "small" },
+        { beat: 10, action: "DON", size: "small" },
     ],
 };
 const clock = new Clock_1.Clock();
 const game = new Game_1.Game(clock, chart);
 game.loadChart();
 let lastTime = Date.now();
+let tap2Hit = false;
+let tap10Hit = false;
 let spamInterval = null;
 let rollSpamStarted = false;
 let rollSpamStopped = false;
@@ -30,28 +33,34 @@ setInterval(() => {
     lastTime = now;
     game.update(dt);
     const beat = game.getCurrentBeat();
-    // Hit tap em 2
-    if (beat >= 2 && beat < 2.1) {
+    // Tap no beat 2
+    if (!tap2Hit && beat >= 2) {
+        tap2Hit = true;
         console.log("Tap 2:", game.handleInput("DON"));
     }
-    // Quando chegar perto do roll, começa spam
+    // Começa spam do roll
     if (!rollSpamStarted && beat >= 4) {
         rollSpamStarted = true;
         console.log("ROLL START SPAM");
         spamInterval = setInterval(() => {
-            game.handleInput("DON");
+            const result = game.handleInput("DON");
+            if (result === "roll-hit") {
+                console.log("roll-hit");
+            }
         }, 50);
     }
-    // Para spam depois do fim do roll
+    // Para spam
     if (rollSpamStarted && !rollSpamStopped && beat >= 6.2) {
         rollSpamStopped = true;
         if (spamInterval)
             clearInterval(spamInterval);
         console.log("ROLL END SPAM");
     }
-    // Tap depois do roll
-    if (beat >= 8 && beat < 8.1) {
-        console.log("Tap 8:", game.handleInput("DON"));
+    // NÃO vamos clicar no tap 8 (testar auto miss)
+    // Novo tap depois do miss
+    if (!tap10Hit && beat >= 10) {
+        tap10Hit = true;
+        console.log("Tap 10:", game.handleInput("DON"));
     }
 }, 16);
 //# sourceMappingURL=main.js.map

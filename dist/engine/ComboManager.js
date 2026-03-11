@@ -4,14 +4,20 @@ exports.ComboManager = void 0;
 class ComboManager {
     combo = 0;
     maxCombo = 0;
+    missCount = 0;
     incrementCombo() {
         this.combo++;
+        console.log("COMBO:", this.combo);
         if (this.combo > this.maxCombo) {
             this.maxCombo = this.combo;
         }
     }
     resetCombo() {
+        if (this.combo > 0) {
+            console.log("COMBO BREAK");
+        }
         this.combo = 0;
+        this.missCount++;
     }
     get getCurrentCombo() {
         return this.combo;
@@ -20,7 +26,7 @@ class ComboManager {
         return this.maxCombo;
     }
     get isFullCombo() {
-        return this.combo > 0;
+        return this.missCount === 0;
     }
 }
 exports.ComboManager = ComboManager;

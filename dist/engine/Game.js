@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Game = void 0;
 const Note_1 = require("../core/Note");
 const TimeEngine_1 = require("./TimeEngine");
-const Metronome_1 = require("./Metronome");
 const NoteManager_1 = require("./NoteManager");
 const Judge_1 = require("./Judge");
 const ComboManager_1 = require("./ComboManager");
@@ -13,7 +12,6 @@ class Game {
     SPAWN_WINDOW_BEAT = 4;
     MISS_WINDOW_BEAT = 0.3;
     timeEngine;
-    metronome;
     noteManager;
     judge;
     comboManager;
@@ -21,7 +19,6 @@ class Game {
         this.clock = clock;
         this.chart = chart;
         this.timeEngine = new TimeEngine_1.TimeEngine(clock, chart.bpm);
-        this.metronome = new Metronome_1.Metronome(this.timeEngine);
         this.noteManager = new NoteManager_1.NoteManager(this.SPAWN_WINDOW_BEAT, this.MISS_WINDOW_BEAT);
         this.judge = new Judge_1.Judge(this.noteManager, 0.05, 0.1, 0.2);
         this.comboManager = new ComboManager_1.ComboManager();
@@ -30,13 +27,11 @@ class Game {
         const currentBeat = this.timeEngine.preciseBeat;
         const activeRoll = this.noteManager.getActiveRoll();
         if (activeRoll) {
-            // console.log("ROLL STATE:", activeRoll.rollState);
             const result = activeRoll.tryHit(action);
             if (result === "roll-hit") {
-                console.log(activeRoll.numberOfHits);
                 this.comboManager.incrementCombo();
             }
-            return;
+            return result;
         }
         const result = this.judge.tryHit(currentBeat, action);
         if (result === "perfect" || result === "good") {
@@ -62,13 +57,19 @@ class Game {
     update(dt) {
         this.clock.advance(dt);
         this.timeEngine.update();
-        const beat = this.timeEngine.currentBeat;
+        const beat = this.timeEngine.preciseBeat;
         this.noteManager.update(beat);
         for (const note of this.noteManager.getActiveNotes) {
             if (note instanceof Note_1.RollNote) {
                 note.updateRoll(beat);
                 if (note.isFinished)
                     this.noteManager.remove(note);
+            }
+        }
+        const expired = this.noteManager.drainExpired();
+        for (const note of expired) {
+            if (note instanceof Note_1.TapNote) {
+                this.comboManager.resetCombo();
             }
         }
     }

@@ -7,6 +7,7 @@ class TimeEngine {
     musicalBeat = 0;
     lastRealTime = 0;
     lastBeatIndex = -1;
+    measure = 4;
     constructor(clock, bpm) {
         this.clock = clock;
         this.bpm = bpm;
@@ -29,6 +30,10 @@ class TimeEngine {
     }
     get currentBeat() {
         return Math.floor(this.musicalBeat);
+    }
+    get currentMeasure() {
+        const beat = this.currentBeat;
+        return (beat % this.measure) + 1;
     }
 }
 exports.TimeEngine = TimeEngine;

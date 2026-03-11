@@ -1,10 +1,11 @@
 export class ComboManager{
     private combo = 0;
     private maxCombo = 0;
-    
+    private missCount = 0;
 
     incrementCombo(){
         this.combo++;
+        console.log("COMBO:", this.combo);
 
         if(this.combo > this.maxCombo){
             this.maxCombo = this.combo;
@@ -12,7 +13,11 @@ export class ComboManager{
     }
 
     resetCombo(){
+    if (this.combo > 0) {
+        console.log("COMBO BREAK");
+    }
         this.combo = 0;
+        this.missCount++;
     }
 
     get getCurrentCombo(){
@@ -24,7 +29,7 @@ export class ComboManager{
     }
 
     get isFullCombo(){
-        return this.combo > 0;
+        return this.missCount === 0;
     }
 
 }

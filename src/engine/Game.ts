@@ -34,13 +34,11 @@ export class Game {
 
     const activeRoll = this.noteManager.getActiveRoll();
     if (activeRoll) {
-      // console.log("ROLL STATE:", activeRoll.rollState);
       const result = activeRoll.tryHit(action);
       if (result === "roll-hit") {
-        console.log(activeRoll.numberOfHits);
         this.comboManager.incrementCombo();
       }
-      return;
+      return result;
     }
 
     const result = this.judge.tryHit(currentBeat, action);
@@ -84,7 +82,7 @@ export class Game {
     this.clock.advance(dt);
     this.timeEngine.update();
 
-    const beat = this.timeEngine.currentBeat;
+    const beat = this.timeEngine.preciseBeat;
 
     this.noteManager.update(beat);
 
@@ -92,6 +90,14 @@ export class Game {
       if (note instanceof RollNote) {
         note.updateRoll(beat);
         if (note.isFinished) this.noteManager.remove(note);
+      }
+    }
+
+    const expired = this.noteManager.drainExpired();
+    
+    for(const note of expired){
+      if(note instanceof TapNote){
+        this.comboManager.resetCombo();
       }
     }
   }
