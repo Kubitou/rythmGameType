@@ -17,7 +17,6 @@ class ComboManager {
             console.log("COMBO BREAK");
         }
         this.combo = 0;
-        this.missCount++;
     }
     get getCurrentCombo() {
         return this.combo;

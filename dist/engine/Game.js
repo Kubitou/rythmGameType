@@ -6,6 +6,7 @@ const TimeEngine_1 = require("./TimeEngine");
 const NoteManager_1 = require("./NoteManager");
 const Judge_1 = require("./Judge");
 const ComboManager_1 = require("./ComboManager");
+const HitStats_1 = require("./HitStats");
 class Game {
     clock;
     chart;
@@ -15,6 +16,7 @@ class Game {
     noteManager;
     judge;
     comboManager;
+    stats;
     constructor(clock, chart) {
         this.clock = clock;
         this.chart = chart;
@@ -22,22 +24,46 @@ class Game {
         this.noteManager = new NoteManager_1.NoteManager(this.SPAWN_WINDOW_BEAT, this.MISS_WINDOW_BEAT);
         this.judge = new Judge_1.Judge(this.noteManager, 0.05, 0.1, 0.2);
         this.comboManager = new ComboManager_1.ComboManager();
+        this.stats = new HitStats_1.HitStats();
     }
     handleInput(action) {
         const currentBeat = this.timeEngine.preciseBeat;
         const activeRoll = this.noteManager.getActiveRoll();
-        if (activeRoll) {
+        if (activeRoll && activeRoll.isActive) {
             const result = activeRoll.tryHit(action);
             if (result === "roll-hit") {
+                const event = {
+                    type: "roll-hit",
+                    noteId: activeRoll.id,
+                };
+                this.stats.register(event);
                 this.comboManager.incrementCombo();
             }
             return result;
         }
         const result = this.judge.tryHit(currentBeat, action);
         if (result === "perfect" || result === "good") {
+            const event = {
+                type: result,
+                noteId: this.judge.lastHitNoteId
+            };
+            this.stats.register(event);
             this.comboManager.incrementCombo();
         }
+        if (result === "bad") {
+            const event = {
+                type: result,
+                noteId: this.judge.lastHitNoteId
+            };
+            this.stats.register(event);
+            this.comboManager.resetCombo();
+        }
         if (result === "miss") {
+            const event = {
+                type: result,
+                noteId: this.judge.lastHitNoteId
+            };
+            this.stats.register(event);
             this.comboManager.resetCombo();
         }
         return result;
@@ -68,13 +94,23 @@ class Game {
         }
         const expired = this.noteManager.drainExpired();
         for (const note of expired) {
+            console.log("EXPIRED:", note.id, note.constructor.name);
             if (note instanceof Note_1.TapNote) {
+                console.log("MISS REGISTERED:", note.id);
+                const event = {
+                    type: "miss",
+                    noteId: this.judge.lastHitNoteId
+                };
+                this.stats.register(event);
                 this.comboManager.resetCombo();
             }
         }
     }
     getCurrentBeat() {
         return this.timeEngine.preciseBeat;
+    }
+    getStats() {
+        return this.stats;
     }
 }
 exports.Game = Game;

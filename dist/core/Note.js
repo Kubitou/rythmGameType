@@ -21,6 +21,9 @@ class TapNote extends Note {
     get startBeat() {
         return this.hitBeat;
     }
+    getExpireBeat() {
+        return this.startBeat;
+    }
     _judged = false;
     markJudged() {
         this._judged = true;
@@ -58,6 +61,9 @@ class RollNote extends Note {
             return null;
         this.hitCount++;
         return "roll-hit";
+    }
+    getExpireBeat() {
+        return this.endBeat;
     }
     get numberOfHits() {
         return this.hitCount;

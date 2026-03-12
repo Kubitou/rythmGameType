@@ -36,6 +36,10 @@ let spamInterval: NodeJS.Timeout | null = null;
 let rollSpamStarted = false;
 let rollSpamStopped = false;
 
+setTimeout(() => {
+  console.log("STATS:", game.getStats());
+}, 12000);
+
 setInterval(() => {
   const now = Date.now();
   const dt = now - lastTime;

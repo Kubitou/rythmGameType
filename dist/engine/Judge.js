@@ -15,45 +15,47 @@ class Judge {
     }
     lastInputBeat = -Infinity;
     inputCooldown = 0.05;
+    lastNoteId = 0;
     tryHit(currentBeat, action) {
         const note = this.noteManager.getFirstActiveNote();
         if (!note)
-            return "miss";
+            return null;
         if (!(note instanceof Note_1.TapNote))
-            return "miss";
+            return null;
         if (note.action !== action)
-            return "miss";
+            return null;
         if (currentBeat - this.lastInputBeat < this.inputCooldown)
-            return "miss";
+            return null;
         this.lastInputBeat = currentBeat;
         const delta = currentBeat - note.hitBeat;
-        // console.log("DELTA:", delta);
         if (delta < -this.badWindow)
-            return "miss";
+            return null;
         const abs = Math.abs(delta);
         if (abs <= this.perfectWindow) {
             note.markJudged();
+            this.lastNoteId = note.id;
             this.noteManager.remove(note);
             return "perfect";
         }
         if (abs <= this.goodWindow) {
             note.markJudged();
+            this.lastNoteId = note.id;
             this.noteManager.remove(note);
             return "good";
         }
         if (abs <= this.badWindow) {
             note.markJudged();
+            this.lastNoteId = note.id;
             this.noteManager.remove(note);
             return "bad";
         }
         note.markJudged();
+        this.lastNoteId = note.id;
         this.noteManager.remove(note);
         return "miss";
     }
-    miss(note) {
-        note.markJudged();
-        this.noteManager.remove(note);
-        return "miss";
+    get lastHitNoteId() {
+        return this.lastNoteId;
     }
 }
 exports.Judge = Judge;

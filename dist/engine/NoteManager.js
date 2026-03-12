@@ -8,6 +8,7 @@ class NoteManager {
     upcomingNotes = [];
     activeNotes = [];
     expiredNotes = [];
+    activeRoll = null;
     constructor(spawnWindow, missWindow) {
         this.spawnWindow = spawnWindow;
         this.missWindow = missWindow;
@@ -18,6 +19,9 @@ class NoteManager {
     update(currentBeat) {
         this.spawn(currentBeat);
         this.collectExpiredNotes(currentBeat);
+        if (this.activeRoll && this.activeRoll.isFinished) {
+            this.activeRoll = null;
+        }
     }
     spawn(currentBeat) {
         while (true) {
@@ -26,8 +30,11 @@ class NoteManager {
                 break;
             if (next.startBeat > currentBeat + this.spawnWindow)
                 break;
-            // console.log("spawn: ", next.hitBeat);
-            this.activeNotes.push(this.upcomingNotes.shift());
+            const spawned = this.upcomingNotes.shift();
+            this.activeNotes.push(spawned);
+            if (spawned instanceof Note_1.RollNote) {
+                this.activeRoll = spawned;
+            }
         }
     }
     collectExpiredNotes(currentBeat) {
@@ -35,11 +42,9 @@ class NoteManager {
             const note = this.activeNotes[0];
             if (!note)
                 break;
-            if ("hitBeat" in note) {
-                if (note.startBeat + this.missWindow < currentBeat) {
-                    this.expiredNotes.push(this.activeNotes.shift());
-                    continue;
-                }
+            if (note.getExpireBeat() + this.missWindow < currentBeat) {
+                this.expiredNotes.push(this.activeNotes.shift());
+                continue;
             }
             break;
         }
@@ -54,14 +59,16 @@ class NoteManager {
         if (index !== -1) {
             this.activeNotes.splice(index, 1);
         }
+        if (note === this.activeRoll) {
+            this.activeRoll = null;
+        }
     }
     getActiveRoll() {
-        for (const note of this.activeNotes) {
-            if (note instanceof Note_1.RollNote && note.isActive) {
-                return note;
-            }
-        }
-        return null;
+        if (!this.activeRoll)
+            return null;
+        if (this.activeRoll.isFinished)
+            return null;
+        return this.activeRoll;
     }
     getFirstActiveNote() {
         return this.activeNotes.at(0) ?? null;

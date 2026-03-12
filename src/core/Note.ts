@@ -4,6 +4,7 @@ export abstract class Note{
     readonly id: number
     readonly action: NoteAction
     readonly size: NoteSize
+    abstract getExpireBeat(): number
 
     constructor(id: number, action: NoteAction, size: NoteSize){
         this.id = id;
@@ -26,6 +27,10 @@ export class TapNote extends Note{
 
     get startBeat(): number{
         return this.hitBeat;
+    }
+
+    getExpireBeat(): number {
+        return this.startBeat;
     }
 
     private _judged = false;
@@ -75,6 +80,10 @@ export class RollNote extends Note{
 
         this.hitCount++;
         return "roll-hit";
+    }
+
+    getExpireBeat(): number {
+        return this.endBeat;
     }
 
     get numberOfHits(){

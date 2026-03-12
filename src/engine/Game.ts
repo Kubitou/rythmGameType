@@ -5,6 +5,8 @@ import { TimeEngine } from "./TimeEngine";
 import { NoteManager } from "./NoteManager";
 import { Judge } from "./Judge";
 import { ComboManager } from "./ComboManager";
+import { HitStats } from "./HitStats";
+import { HitEvent } from "../core/HitEvent";
 
 export class Game {
   private SPAWN_WINDOW_BEAT: number = 4;
@@ -14,6 +16,7 @@ export class Game {
   private noteManager: NoteManager;
   private judge: Judge;
   private comboManager: ComboManager;
+  private stats: HitStats;
 
   constructor(
     private clock: Clock,
@@ -25,17 +28,25 @@ export class Game {
       this.SPAWN_WINDOW_BEAT,
       this.MISS_WINDOW_BEAT,
     );
+
     this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
     this.comboManager = new ComboManager();
+    this.stats = new HitStats();
   }
 
   handleInput(action: "DON" | "KATSU") {
     const currentBeat = this.timeEngine.preciseBeat;
 
     const activeRoll = this.noteManager.getActiveRoll();
-    if (activeRoll) {
+    if (activeRoll && activeRoll.isActive) {
       const result = activeRoll.tryHit(action);
+
       if (result === "roll-hit") {
+        const event: HitEvent = {
+          type: "roll-hit",
+          noteId: activeRoll.id,
+        }
+        this.stats.register(event);
         this.comboManager.incrementCombo();
       }
       return result;
@@ -44,10 +55,29 @@ export class Game {
     const result = this.judge.tryHit(currentBeat, action);
 
     if (result === "perfect" || result === "good") {
+      const event: HitEvent = {
+        type: result,
+        noteId: this.judge.lastHitNoteId
+      }
+      this.stats.register(event);
       this.comboManager.incrementCombo();
     }
 
+    if(result === "bad"){
+      const event: HitEvent = {
+        type: result,
+        noteId: this.judge.lastHitNoteId
+      }
+      this.stats.register(event);
+      this.comboManager.resetCombo();
+    }
+
     if (result === "miss") {
+      const event: HitEvent = {
+        type: result,
+        noteId: this.judge.lastHitNoteId
+      }
+      this.stats.register(event);
       this.comboManager.resetCombo();
     }
 
@@ -96,7 +126,15 @@ export class Game {
     const expired = this.noteManager.drainExpired();
     
     for(const note of expired){
+      console.log("EXPIRED:", note.id, note.constructor.name);
+
       if(note instanceof TapNote){
+        console.log("MISS REGISTERED:", note.id);
+        const event: HitEvent = {
+        type: "miss",
+        noteId: this.judge.lastHitNoteId
+      }
+      this.stats.register(event);
         this.comboManager.resetCombo();
       }
     }
@@ -104,5 +142,9 @@ export class Game {
 
   getCurrentBeat() {
     return this.timeEngine.preciseBeat;
+  }
+
+  getStats(){
+    return this.stats;
   }
 }

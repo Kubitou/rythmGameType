@@ -4,6 +4,7 @@ export class NoteManager {
   private upcomingNotes: Note[] = [];
   private activeNotes: Note[] = [];
   private expiredNotes: Note[] = [];
+  private activeRoll: RollNote | null = null;
 
   constructor(
     private spawnWindow: number,
@@ -17,6 +18,9 @@ export class NoteManager {
   update(currentBeat: number) {
     this.spawn(currentBeat);
     this.collectExpiredNotes(currentBeat);
+    if(this.activeRoll && this.activeRoll.isFinished){
+      this.activeRoll = null;
+    }
   }
 
   private spawn(currentBeat: number) {
@@ -25,8 +29,13 @@ export class NoteManager {
       if (!next) break;
 
       if (next.startBeat > currentBeat + this.spawnWindow) break;
-      // console.log("spawn: ", next.hitBeat);
-      this.activeNotes.push(this.upcomingNotes.shift()!);
+
+      const spawned = this.upcomingNotes.shift()!;
+      this.activeNotes.push(spawned);
+      
+      if(spawned instanceof RollNote){
+        this.activeRoll = spawned;
+      }
     }
   }
 
@@ -35,12 +44,11 @@ export class NoteManager {
       const note = this.activeNotes[0];
       if (!note) break;
 
-      if ("hitBeat" in note) {
-        if (note.startBeat + this.missWindow < currentBeat) {
-          this.expiredNotes.push(this.activeNotes.shift()!);
-          continue;
-        }
+      if (note.getExpireBeat() + this.missWindow < currentBeat) {
+        this.expiredNotes.push(this.activeNotes.shift()!);
+        continue;
       }
+
       break;
     }
   }
@@ -56,15 +64,15 @@ export class NoteManager {
     if (index !== -1) {
       this.activeNotes.splice(index, 1);
     }
+    if(note === this.activeRoll){
+      this.activeRoll = null;
+    }
   }
 
   getActiveRoll(): RollNote | null{
-    for(const note of this.activeNotes){
-      if(note instanceof RollNote && note.isActive){
-        return note;
-      }
-    }
-    return null;
+    if(!this.activeRoll) return null;
+    if(this.activeRoll.isFinished) return null;
+    return this.activeRoll;
   }
 
   getFirstActiveNote(): Note | null {
