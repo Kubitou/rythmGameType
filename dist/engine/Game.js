@@ -94,12 +94,12 @@ class Game {
         }
         const expired = this.noteManager.drainExpired();
         for (const note of expired) {
-            console.log("EXPIRED:", note.id, note.constructor.name);
+            // console.log("EXPIRED:", note.id, note.constructor.name);
             if (note instanceof Note_1.TapNote) {
-                console.log("MISS REGISTERED:", note.id);
+                // console.log("MISS REGISTERED:", note.id);
                 const event = {
                     type: "miss",
-                    noteId: this.judge.lastHitNoteId
+                    noteId: note.id
                 };
                 this.stats.register(event);
                 this.comboManager.resetCombo();

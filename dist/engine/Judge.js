@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Judge = void 0;
-const Note_1 = require("../core/Note");
 class Judge {
     noteManager;
     perfectWindow;
@@ -17,15 +16,14 @@ class Judge {
     inputCooldown = 0.05;
     lastNoteId = 0;
     tryHit(currentBeat, action) {
-        const note = this.noteManager.getFirstActiveNote();
+        const note = this.noteManager.findClosestTap(currentBeat, action, this.badWindow);
         if (!note)
-            return null;
-        if (!(note instanceof Note_1.TapNote))
             return null;
         if (note.action !== action)
             return null;
         if (currentBeat - this.lastInputBeat < this.inputCooldown)
             return null;
+        console.log("JUDGING NOTE:", note.id, note.startBeat);
         this.lastInputBeat = currentBeat;
         const delta = currentBeat - note.hitBeat;
         if (delta < -this.badWindow)

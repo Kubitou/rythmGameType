@@ -1,3 +1,4 @@
+import { NoteAction } from "../core/ChartTypes";
 import { Note, RollNote, TapNote } from "../core/Note";
 
 export class NoteManager {
@@ -40,16 +41,17 @@ export class NoteManager {
   }
 
   private collectExpiredNotes(currentBeat: number) {
-    while (true) {
-      const note = this.activeNotes[0];
+    for(let i = 0; i < this.activeNotes.length;) {
+      const note = this.activeNotes[i];
       if (!note) break;
 
       if (note.getExpireBeat() + this.missWindow < currentBeat) {
-        this.expiredNotes.push(this.activeNotes.shift()!);
+        this.expiredNotes.push(note);
+        this.activeNotes.splice(i, 1);
         continue;
       }
 
-      break;
+      i++;
     }
   }
 
@@ -77,6 +79,31 @@ export class NoteManager {
 
   getFirstActiveNote(): Note | null {
     return this.activeNotes.at(0) ?? null;
+  }
+
+  findClosestTap(
+    currentBeat: number,
+    action: NoteAction, 
+    window: number): TapNote | null{
+      for(const note of this.activeNotes){
+
+        if(!(note instanceof TapNote)) continue;
+
+        if(note.action !== action) continue;
+
+        const delta = Math.abs(currentBeat - note.startBeat);
+
+        if(Math.abs(delta) <= window){
+          return note;
+        }
+
+        if(delta < -window){
+          break;
+        }
+
+      }
+   
+      return null;
   }
 
   get getActiveNotes() {

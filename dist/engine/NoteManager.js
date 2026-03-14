@@ -38,15 +38,16 @@ class NoteManager {
         }
     }
     collectExpiredNotes(currentBeat) {
-        while (true) {
-            const note = this.activeNotes[0];
+        for (let i = 0; i < this.activeNotes.length;) {
+            const note = this.activeNotes[i];
             if (!note)
                 break;
             if (note.getExpireBeat() + this.missWindow < currentBeat) {
-                this.expiredNotes.push(this.activeNotes.shift());
+                this.expiredNotes.push(note);
+                this.activeNotes.splice(i, 1);
                 continue;
             }
-            break;
+            i++;
         }
     }
     drainExpired() {
@@ -72,6 +73,19 @@ class NoteManager {
     }
     getFirstActiveNote() {
         return this.activeNotes.at(0) ?? null;
+    }
+    findClosestTap(currentBeat, action, window) {
+        for (const note of this.activeNotes) {
+            if (!(note instanceof Note_1.TapNote))
+                continue;
+            if (note.action !== action)
+                continue;
+            const delta = Math.abs(currentBeat - note.startBeat);
+            if (delta <= window) {
+                return note;
+            }
+        }
+        return null;
     }
     get getActiveNotes() {
         return this.activeNotes;

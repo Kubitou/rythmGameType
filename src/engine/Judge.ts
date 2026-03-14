@@ -1,3 +1,4 @@
+import { NoteAction } from "../core/ChartTypes";
 import { TapNote } from "../core/Note";
 import { NoteManager } from "./NoteManager";
 
@@ -15,16 +16,16 @@ export class Judge{
     private inputCooldown = 0.05;
     private lastNoteId = 0;
 
-    tryHit(currentBeat: number, action: string): Judgment{
-        const note = this.noteManager.getFirstActiveNote();
-
+    tryHit(currentBeat: number, action: NoteAction): Judgment{
+        const note = this.noteManager.findClosestTap(currentBeat, action, this.badWindow);
+        
         if(!note) return null;
-
-        if(!(note instanceof TapNote)) return null;
 
         if(note.action !== action) return null;
 
         if(currentBeat - this.lastInputBeat < this.inputCooldown) return null;
+       
+        // console.log("JUDGING NOTE:", note.id, note.startBeat);
         this.lastInputBeat = currentBeat;
 
         const delta = currentBeat - note.hitBeat;

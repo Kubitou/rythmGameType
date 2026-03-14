@@ -7,14 +7,14 @@ class ComboManager {
     missCount = 0;
     incrementCombo() {
         this.combo++;
-        console.log("COMBO:", this.combo);
+        // console.log("COMBO:", this.combo);
         if (this.combo > this.maxCombo) {
             this.maxCombo = this.combo;
         }
     }
     resetCombo() {
         if (this.combo > 0) {
-            console.log("COMBO BREAK");
+            // console.log("COMBO BREAK");
         }
         this.combo = 0;
     }
