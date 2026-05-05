@@ -1,17 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NoteManager = void 0;
-const Note_1 = require("../core/Note");
-class NoteManager {
-    spawnWindow;
-    missWindow;
-    upcomingNotes = [];
-    activeNotes = [];
-    expiredNotes = [];
-    activeRoll = null;
+import { RollNote, TapNote } from "../core/Note.js";
+export class NoteManager {
     constructor(spawnWindow, missWindow) {
         this.spawnWindow = spawnWindow;
         this.missWindow = missWindow;
+        this.upcomingNotes = [];
+        this.activeNotes = [];
+        this.expiredNotes = [];
+        this.activeRoll = null;
     }
     load(notes) {
         this.upcomingNotes = [...notes].sort((a, b) => a.startBeat - b.startBeat);
@@ -32,7 +27,7 @@ class NoteManager {
                 break;
             const spawned = this.upcomingNotes.shift();
             this.activeNotes.push(spawned);
-            if (spawned instanceof Note_1.RollNote) {
+            if (spawned instanceof RollNote) {
                 this.activeRoll = spawned;
             }
         }
@@ -72,11 +67,12 @@ class NoteManager {
         return this.activeRoll;
     }
     getFirstActiveNote() {
-        return this.activeNotes.at(0) ?? null;
+        var _a;
+        return (_a = this.activeNotes.at(0)) !== null && _a !== void 0 ? _a : null;
     }
     findClosestTap(currentBeat, action, window) {
         for (const note of this.activeNotes) {
-            if (!(note instanceof Note_1.TapNote))
+            if (!(note instanceof TapNote))
                 continue;
             if (note.action !== action)
                 continue;
@@ -97,5 +93,4 @@ class NoteManager {
         return this.upcomingNotes;
     }
 }
-exports.NoteManager = NoteManager;
 //# sourceMappingURL=NoteManager.js.map

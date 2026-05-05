@@ -1,12 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.HitStats = void 0;
-class HitStats {
-    perfect = 0;
-    good = 0;
-    bad = 0;
-    miss = 0;
-    rollHits = 0;
+export class HitStats {
+    constructor() {
+        this.perfect = 0;
+        this.good = 0;
+        this.bad = 0;
+        this.miss = 0;
+        this.rollHits = 0;
+    }
     register(event) {
         switch (event.type) {
             case "perfect":
@@ -27,5 +26,4 @@ class HitStats {
         }
     }
 }
-exports.HitStats = HitStats;
 //# sourceMappingURL=HitStats.js.map

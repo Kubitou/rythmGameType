@@ -1,58 +1,54 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Game = void 0;
-const Note_1 = require("../core/Note");
-const TimeEngine_1 = require("./TimeEngine");
-const NoteManager_1 = require("./NoteManager");
-const Judge_1 = require("./Judge");
-const ComboManager_1 = require("./ComboManager");
-const HitStats_1 = require("./HitStats");
-class Game {
-    clock;
-    chart;
-    SPAWN_WINDOW_BEAT = 4;
-    MISS_WINDOW_BEAT = 0.3;
-    timeEngine;
-    noteManager;
-    judge;
-    comboManager;
-    stats;
+import { RollNote, TapNote } from "../core/Note.js";
+import { TimeEngine } from "./TimeEngine.js";
+import { NoteManager } from "./NoteManager.js";
+import { Judge } from "./Judge.js";
+import { ComboManager } from "./ComboManager.js";
+import { HitStats } from "./HitStats.js";
+export class Game {
     registerHit(type, noteId) {
         this.stats.register({ type, noteId });
+        if (type === "perfect" || type === "good") {
+            this.comboManager.incrementCombo();
+        }
+        else {
+            this.comboManager.resetCombo();
+        }
     }
     constructor(clock, chart) {
         this.clock = clock;
         this.chart = chart;
-        this.timeEngine = new TimeEngine_1.TimeEngine(clock, chart.bpm);
-        this.noteManager = new NoteManager_1.NoteManager(this.SPAWN_WINDOW_BEAT, this.MISS_WINDOW_BEAT);
-        this.judge = new Judge_1.Judge(this.noteManager, 0.05, 0.1, 0.2);
-        this.comboManager = new ComboManager_1.ComboManager();
-        this.stats = new HitStats_1.HitStats();
+        this.SPAWN_WINDOW_BEAT = 4;
+        this.MISS_WINDOW_BEAT = 0.3;
+        this.timeScale = 1;
+        this.state = "idle";
+        this.timeEngine = new TimeEngine(clock, chart.bpm);
+        this.noteManager = new NoteManager(this.SPAWN_WINDOW_BEAT, this.MISS_WINDOW_BEAT);
+        this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
+        this.comboManager = new ComboManager();
+        this.stats = new HitStats();
+    }
+    setTimeScale(scale) {
+        this.timeScale = scale;
+    }
+    start() {
+        this.loadChart();
+        this.state = "playing";
     }
     handleInput(action) {
+        if (this.state !== "playing")
+            return;
         const currentBeat = this.timeEngine.preciseBeat;
         const activeRoll = this.noteManager.getActiveRoll();
         if (activeRoll && activeRoll.isActive) {
             const result = activeRoll.tryHit(action);
             if (result === "roll-hit") {
-                this.registerHit(result, this.judge.lastHitNoteId);
-                this.comboManager.incrementCombo();
+                this.registerHit(result, activeRoll.id);
             }
             return result;
         }
         const result = this.judge.tryHit(currentBeat, action);
-        if (result === "perfect" || result === "good") {
+        if (result)
             this.registerHit(result, this.judge.lastHitNoteId);
-            this.comboManager.incrementCombo();
-        }
-        if (result === "bad") {
-            this.registerHit(result, this.judge.lastHitNoteId);
-            this.comboManager.resetCombo();
-        }
-        if (result === "miss") {
-            this.registerHit(result, this.judge.lastHitNoteId);
-            this.comboManager.resetCombo();
-        }
         return result;
     }
     loadChart() {
@@ -60,20 +56,23 @@ class Game {
         let notes = [];
         for (const chartNote of this.chart.notes) {
             if (chartNote.type === "roll") {
-                notes.push(new Note_1.RollNote(chartNote.startBeat, chartNote.endBeat, id++, chartNote.action, chartNote.size));
+                notes.push(new RollNote(chartNote.startBeat, chartNote.endBeat, id++, chartNote.action, chartNote.size));
                 continue;
             }
-            notes.push(new Note_1.TapNote(chartNote.beat, id++, chartNote.action, chartNote.size));
+            notes.push(new TapNote(chartNote.beat, id++, chartNote.action, chartNote.size));
         }
         this.noteManager.load(notes);
     }
     update(dt) {
-        this.clock.advance(dt);
+        if (this.state !== "playing")
+            return;
+        const scaleDt = dt * this.timeScale;
+        this.clock.advance(scaleDt);
         this.timeEngine.update();
         const beat = this.timeEngine.preciseBeat;
         this.noteManager.update(beat);
         for (const note of this.noteManager.getActiveNotes) {
-            if (note instanceof Note_1.RollNote) {
+            if (note instanceof RollNote) {
                 note.updateRoll(beat);
                 if (note.isFinished)
                     this.noteManager.remove(note);
@@ -82,13 +81,13 @@ class Game {
         const expired = this.noteManager.drainExpired();
         for (const note of expired) {
             // console.log("EXPIRED:", note.id, note.constructor.name);
-            if (note instanceof Note_1.TapNote) {
+            if (note instanceof TapNote) {
                 // console.log("MISS REGISTERED:", note.id);
                 const event = {
                     type: "miss",
                     noteId: note.id
                 };
-                this.stats.register(event);
+                this.registerHit("miss", note.id);
                 this.comboManager.resetCombo();
             }
         }
@@ -100,5 +99,4 @@ class Game {
         return this.stats;
     }
 }
-exports.Game = Game;
 //# sourceMappingURL=Game.js.map

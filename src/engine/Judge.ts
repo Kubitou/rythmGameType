@@ -1,5 +1,5 @@
-import { NoteAction } from "../core/ChartTypes";
-import { NoteManager } from "./NoteManager";
+import { NoteAction } from "../core/ChartTypes.js";
+import { NoteManager } from "./NoteManager.js";
 
 type Judgment = "perfect" | "good" | "bad" | "miss" | null;
 

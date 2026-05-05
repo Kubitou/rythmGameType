@@ -1,4 +1,4 @@
-import { Clock } from "./Clock";
+import { Clock } from "./Clock.js";
 
 export class TimeEngine{
     private startTime = 0;

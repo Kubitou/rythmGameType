@@ -1,6 +1,7 @@
-import { Clock } from "./engine/Clock";
-import { Game } from "./engine/Game";
-import { Chart } from "./core/ChartTypes";
+import { Clock } from "./engine/Clock.js";
+import { Game } from "./engine/Game.js";
+import { Chart } from "./core/ChartTypes.js";
+import { Renderer } from "./render/Renderer.js";
 
 const chart: Chart = {
   bpm: 120,
@@ -25,64 +26,92 @@ const chart: Chart = {
 const clock = new Clock();
 const game = new Game(clock, chart);
 
-game.loadChart();
+const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
 
-let lastTime = Date.now();
+const renderer = new Renderer(canvas);
 
-let tap2Hit = false;
-let tap10Hit = false;
+game.start();
 
-let spamInterval: NodeJS.Timeout | null = null;
-let rollSpamStarted = false;
-let rollSpamStopped = false;
+let lastTime = performance.now();
 
-setTimeout(() => {
-  console.log("STATS:", game.getStats());
-}, 12000);
-
-setInterval(() => {
-  const now = Date.now();
+function loop(now: number){
   const dt = now - lastTime;
   lastTime = now;
+  // console.log("BEAT:", game.getCurrentBeat());
 
   game.update(dt);
+  renderer.render(game);
 
-  const beat = game.getCurrentBeat();
+  requestAnimationFrame(loop);
+}
 
-  // Tap no beat 2
-  if (!tap2Hit && beat >= 2) {
-    tap2Hit = true;
-    console.log("Tap 2:", game.handleInput("DON"));
-  }
+requestAnimationFrame(loop);
 
-  // Começa spam do roll
-  if (!rollSpamStarted && beat >= 4) {
-    rollSpamStarted = true;
+window.addEventListener("keydown", (e) => {
+  if(e.key === "f") game.handleInput("DON");
+  if(e.key === "j") game.handleInput("KATSU");
+  if(e.key === "1") game.setTimeScale(1);
+  if(e.key === "2") game.setTimeScale(0.5);
+  if(e.key === "3"){
+    game.setTimeScale(0.25);
+    console.log("pressed");
+  } 
+});
 
-    console.log("ROLL START SPAM");
+// let tap2Hit = false;
+// let tap10Hit = false;
 
-    spamInterval = setInterval(() => {
-      const result = game.handleInput("DON");
-      if (result === "roll-hit") {
-        console.log("roll-hit");
-      }
-    }, 50);
-  }
+// let spamInterval: NodeJS.Timeout | null = null;
+// let rollSpamStarted = false;
+// let rollSpamStopped = false;
 
-  // Para spam
-  if (rollSpamStarted && !rollSpamStopped && beat >= 6.2) {
-    rollSpamStopped = true;
+// setTimeout(() => {
+//   console.log("STATS:", game.getStats());
+// }, 12000);
 
-    if (spamInterval) clearInterval(spamInterval);
+// setInterval(() => {
+//   const now = Date.now();
+//   const dt = now - lastTime;
+//   lastTime = now;
 
-    console.log("ROLL END SPAM");
-  }
+//   game.update(dt);
 
-  // NÃO vamos clicar no tap 8 (testar auto miss)
+//   const beat = game.getCurrentBeat();
 
-  // Novo tap depois do miss
-  if (!tap10Hit && beat >= 10) {
-    tap10Hit = true;
-    console.log("Tap 10:", game.handleInput("DON"));
-  }
-}, 16);
+//   // Tap no beat 2
+//   if (!tap2Hit && beat >= 2) {
+//     tap2Hit = true;
+//     console.log("Tap 2:", game.handleInput("DON"));
+//   }
+
+//   // Começa spam do roll
+//   if (!rollSpamStarted && beat >= 4) {
+//     rollSpamStarted = true;
+
+//     console.log("ROLL START SPAM");
+
+//     spamInterval = setInterval(() => {
+//       const result = game.handleInput("DON");
+//       if (result === "roll-hit") {
+//         console.log("roll-hit");
+//       }
+//     }, 50);
+//   }
+
+//   // Para spam
+//   if (rollSpamStarted && !rollSpamStopped && beat >= 6.2) {
+//     rollSpamStopped = true;
+
+//     if (spamInterval) clearInterval(spamInterval);
+
+//     console.log("ROLL END SPAM");
+//   }
+
+//   // NÃO vamos clicar no tap 8 (testar auto miss)
+
+//   // Novo tap depois do miss
+//   if (!tap10Hit && beat >= 10) {
+//     tap10Hit = true;
+//     console.log("Tap 10:", game.handleInput("DON"));
+//   }
+// }, 16);

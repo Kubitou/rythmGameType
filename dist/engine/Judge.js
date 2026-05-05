@@ -1,20 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Judge = void 0;
-class Judge {
-    noteManager;
-    perfectWindow;
-    goodWindow;
-    badWindow;
+export class Judge {
     constructor(noteManager, perfectWindow, goodWindow, badWindow) {
         this.noteManager = noteManager;
         this.perfectWindow = perfectWindow;
         this.goodWindow = goodWindow;
         this.badWindow = badWindow;
+        this.lastInputBeat = -Infinity;
+        this.inputCooldown = 0.05;
+        this.lastNoteId = 0;
     }
-    lastInputBeat = -Infinity;
-    inputCooldown = 0.05;
-    lastNoteId = 0;
     tryHit(currentBeat, action) {
         const note = this.noteManager.findClosestTap(currentBeat, action, this.badWindow);
         if (!note)
@@ -56,5 +49,4 @@ class Judge {
         return this.lastNoteId;
     }
 }
-exports.Judge = Judge;
 //# sourceMappingURL=Judge.js.map

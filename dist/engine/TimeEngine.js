@@ -1,17 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TimeEngine = void 0;
-class TimeEngine {
-    clock;
-    bpm;
-    startTime = 0;
-    musicalBeat = 0;
-    lastRealTime = 0;
-    lastBeatIndex = -1;
-    measure = 4;
+export class TimeEngine {
     constructor(clock, bpm) {
         this.clock = clock;
         this.bpm = bpm;
+        this.startTime = 0;
+        this.musicalBeat = 0;
+        this.lastRealTime = 0;
+        this.lastBeatIndex = -1;
+        this.measure = 4;
     }
     start() {
         this.startTime = this.clock.time;
@@ -44,5 +39,4 @@ class TimeEngine {
         return (beat % this.measure) + 1;
     }
 }
-exports.TimeEngine = TimeEngine;
 //# sourceMappingURL=TimeEngine.js.map

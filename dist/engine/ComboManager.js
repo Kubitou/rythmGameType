@@ -1,10 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ComboManager = void 0;
-class ComboManager {
-    combo = 0;
-    maxCombo = 0;
-    missCount = 0;
+export class ComboManager {
+    constructor() {
+        this.combo = 0;
+        this.maxCombo = 0;
+        this.missCount = 0;
+    }
     incrementCombo() {
         this.combo++;
         // console.log("COMBO:", this.combo);
@@ -28,5 +27,4 @@ class ComboManager {
         return this.missCount === 0;
     }
 }
-exports.ComboManager = ComboManager;
 //# sourceMappingURL=ComboManager.js.map

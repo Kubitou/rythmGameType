@@ -1,8 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 class SyncManager {
-    clock;
-    audio;
     constructor(clock, audio) {
         this.clock = clock;
         this.audio = audio;
@@ -14,4 +10,5 @@ class SyncManager {
         return drift;
     }
 }
+export {};
 //# sourceMappingURL=SyncManager.js.map

@@ -1,8 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PlayerInput = void 0;
-class PlayerInput {
-    onInput;
+export class PlayerInput {
     constructor(onInput) {
         this.onInput = onInput;
         process.stdin.setRawMode(true);
@@ -18,5 +14,4 @@ class PlayerInput {
         });
     }
 }
-exports.PlayerInput = PlayerInput;
 //# sourceMappingURL=PlayerInput.js.map

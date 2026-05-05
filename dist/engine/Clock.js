@@ -1,8 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Clock = void 0;
-class Clock {
-    _time = 0;
+export class Clock {
+    constructor() {
+        this._time = 0;
+    }
     advance(dt) {
         this._time += dt;
     }
@@ -13,5 +12,4 @@ class Clock {
         return this._time;
     }
 }
-exports.Clock = Clock;
 //# sourceMappingURL=Clock.js.map

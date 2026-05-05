@@ -1,9 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BeatConverter = void 0;
-class BeatConverter {
-    bpm;
-    offset;
+export class BeatConverter {
     constructor(bpm, offset) {
         this.bpm = bpm;
         this.offset = offset;
@@ -13,5 +8,4 @@ class BeatConverter {
         return this.offset + beat * beatDuration;
     }
 }
-exports.BeatConverter = BeatConverter;
 //# sourceMappingURL=BeatConverter.js.map

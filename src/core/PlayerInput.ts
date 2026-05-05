@@ -1,5 +1,3 @@
-import { OrganizeImportsMode } from "typescript";
-
 export type InputAction = "DON" | "KATSU";
 
 export class PlayerInput{

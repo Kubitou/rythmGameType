@@ -1,4 +1,4 @@
-import { HitEvent } from "../core/HitEvent";
+import { HitEvent } from "../core/HitEvent.js";
 
 export class HitStats{
     perfect = 0;

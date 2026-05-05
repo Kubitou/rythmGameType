@@ -1,4 +1,4 @@
-import { Clock } from "./Clock";
+import { Clock } from "./Clock.js";
 
 class SyncManager{
     constructor(

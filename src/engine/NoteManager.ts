@@ -1,5 +1,5 @@
-import { NoteAction } from "../core/ChartTypes";
-import { Note, RollNote, TapNote } from "../core/Note";
+import { NoteAction } from "../core/ChartTypes.js";
+import { Note, RollNote, TapNote } from "../core/Note.js";
 
 export class NoteManager {
   private upcomingNotes: Note[] = [];

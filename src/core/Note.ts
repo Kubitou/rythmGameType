@@ -1,4 +1,4 @@
-import { NoteAction, NoteSize, NoteState, RollHitResult } from "./ChartTypes";
+import { NoteAction, NoteSize, NoteState, RollHitResult } from "./ChartTypes.js";
 
 export abstract class Note{
     readonly id: number

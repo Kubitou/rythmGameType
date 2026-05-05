@@ -1,12 +1,12 @@
-import { Clock } from "./Clock";
-import { Note, RollNote, TapNote } from "../core/Note";
-import { Chart } from "../core/ChartTypes";
-import { TimeEngine } from "./TimeEngine";
-import { NoteManager } from "./NoteManager";
-import { Judge } from "./Judge";
-import { ComboManager } from "./ComboManager";
-import { HitStats } from "./HitStats";
-import { HitEvent } from "../core/HitEvent";
+import { Clock } from "./Clock.js";
+import { Note, RollNote, TapNote } from "../core/Note.js";
+import { Chart } from "../core/ChartTypes.js";
+import { TimeEngine } from "./TimeEngine.js";
+import { NoteManager } from "./NoteManager.js";
+import { Judge } from "./Judge.js";
+import { ComboManager } from "./ComboManager.js";
+import { HitStats } from "./HitStats.js";
+import { HitEvent } from "../core/HitEvent.js";
 
 type GameState = 
 | "idle" 
@@ -23,6 +23,8 @@ export class Game {
   private judge: Judge;
   private comboManager: ComboManager;
   private stats: HitStats;
+
+  private timeScale = 1;
 
   private state: GameState = "idle";
 
@@ -50,6 +52,10 @@ export class Game {
     this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
     this.comboManager = new ComboManager();
     this.stats = new HitStats();
+  }
+
+  setTimeScale(scale: number){
+    this.timeScale = scale;
   }
 
   start(){
@@ -107,7 +113,9 @@ export class Game {
   update(dt: number) {
     if(this.state !== "playing") return;
 
-    this.clock.advance(dt);
+    const scaleDt = dt * this.timeScale;
+
+    this.clock.advance(scaleDt);
     this.timeEngine.update();
 
     const beat = this.timeEngine.preciseBeat;
