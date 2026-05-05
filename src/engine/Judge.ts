@@ -1,5 +1,4 @@
 import { NoteAction } from "../core/ChartTypes";
-import { TapNote } from "../core/Note";
 import { NoteManager } from "./NoteManager";
 
 type Judgment = "perfect" | "good" | "bad" | "miss" | null;

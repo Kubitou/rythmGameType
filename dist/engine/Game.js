@@ -17,6 +17,9 @@ class Game {
     judge;
     comboManager;
     stats;
+    registerHit(type, noteId) {
+        this.stats.register({ type, noteId });
+    }
     constructor(clock, chart) {
         this.clock = clock;
         this.chart = chart;
@@ -32,38 +35,22 @@ class Game {
         if (activeRoll && activeRoll.isActive) {
             const result = activeRoll.tryHit(action);
             if (result === "roll-hit") {
-                const event = {
-                    type: "roll-hit",
-                    noteId: activeRoll.id,
-                };
-                this.stats.register(event);
+                this.registerHit(result, this.judge.lastHitNoteId);
                 this.comboManager.incrementCombo();
             }
             return result;
         }
         const result = this.judge.tryHit(currentBeat, action);
         if (result === "perfect" || result === "good") {
-            const event = {
-                type: result,
-                noteId: this.judge.lastHitNoteId
-            };
-            this.stats.register(event);
+            this.registerHit(result, this.judge.lastHitNoteId);
             this.comboManager.incrementCombo();
         }
         if (result === "bad") {
-            const event = {
-                type: result,
-                noteId: this.judge.lastHitNoteId
-            };
-            this.stats.register(event);
+            this.registerHit(result, this.judge.lastHitNoteId);
             this.comboManager.resetCombo();
         }
         if (result === "miss") {
-            const event = {
-                type: result,
-                noteId: this.judge.lastHitNoteId
-            };
-            this.stats.register(event);
+            this.registerHit(result, this.judge.lastHitNoteId);
             this.comboManager.resetCombo();
         }
         return result;

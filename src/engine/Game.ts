@@ -8,6 +8,12 @@ import { ComboManager } from "./ComboManager";
 import { HitStats } from "./HitStats";
 import { HitEvent } from "../core/HitEvent";
 
+type GameState = 
+| "idle" 
+| "playing" 
+| "paused" 
+| "finished";
+
 export class Game {
   private SPAWN_WINDOW_BEAT: number = 4;
   private MISS_WINDOW_BEAT: number = 0.3;
@@ -17,6 +23,18 @@ export class Game {
   private judge: Judge;
   private comboManager: ComboManager;
   private stats: HitStats;
+
+  private state: GameState = "idle";
+
+  private registerHit(type: HitEvent["type"], noteId: number){
+    this.stats.register({type, noteId});
+    
+    if(type === "perfect" || type === "good"){
+      this.comboManager.incrementCombo();
+    } else {
+      this.comboManager.resetCombo();
+    }
+  }
 
   constructor(
     private clock: Clock,
@@ -34,7 +52,14 @@ export class Game {
     this.stats = new HitStats();
   }
 
+  start(){
+    this.loadChart();
+    this.state = "playing";
+  }
+
   handleInput(action: "DON" | "KATSU") {
+    if(this.state !== "playing") return;
+
     const currentBeat = this.timeEngine.preciseBeat;
 
     const activeRoll = this.noteManager.getActiveRoll();
@@ -42,45 +67,16 @@ export class Game {
       const result = activeRoll.tryHit(action);
 
       if (result === "roll-hit") {
-        const event: HitEvent = {
-          type: "roll-hit",
-          noteId: activeRoll.id,
-        }
-        this.stats.register(event);
-        this.comboManager.incrementCombo();
+        this.registerHit(result, activeRoll.id);
       }
       return result;
     }
 
     const result = this.judge.tryHit(currentBeat, action);
 
-    if (result === "perfect" || result === "good") {
-      const event: HitEvent = {
-        type: result,
-        noteId: this.judge.lastHitNoteId
-      }
-      this.stats.register(event);
-      this.comboManager.incrementCombo();
-    }
-
-    if(result === "bad"){
-      const event: HitEvent = {
-        type: result,
-        noteId: this.judge.lastHitNoteId
-      }
-      this.stats.register(event);
-      this.comboManager.resetCombo();
-    }
-
-    if (result === "miss") {
-      const event: HitEvent = {
-        type: result,
-        noteId: this.judge.lastHitNoteId
-      }
-      this.stats.register(event);
-      this.comboManager.resetCombo();
-    }
-
+    if(result)
+      this.registerHit(result, this.judge.lastHitNoteId);
+   
     return result;
   }
 
@@ -109,6 +105,8 @@ export class Game {
   }
 
   update(dt: number) {
+    if(this.state !== "playing") return;
+
     this.clock.advance(dt);
     this.timeEngine.update();
 
@@ -134,8 +132,8 @@ export class Game {
         type: "miss",
         noteId: note.id
       }
-      this.stats.register(event);
-        this.comboManager.resetCombo();
+      this.registerHit("miss", note.id);
+      this.comboManager.resetCombo();
       }
     }
   }

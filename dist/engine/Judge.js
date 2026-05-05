@@ -23,7 +23,7 @@ class Judge {
             return null;
         if (currentBeat - this.lastInputBeat < this.inputCooldown)
             return null;
-        console.log("JUDGING NOTE:", note.id, note.startBeat);
+        // console.log("JUDGING NOTE:", note.id, note.startBeat);
         this.lastInputBeat = currentBeat;
         const delta = currentBeat - note.hitBeat;
         if (delta < -this.badWindow)

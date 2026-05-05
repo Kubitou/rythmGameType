@@ -4,6 +4,7 @@ exports.TimeEngine = void 0;
 class TimeEngine {
     clock;
     bpm;
+    startTime = 0;
     musicalBeat = 0;
     lastRealTime = 0;
     lastBeatIndex = -1;
@@ -11,6 +12,10 @@ class TimeEngine {
     constructor(clock, bpm) {
         this.clock = clock;
         this.bpm = bpm;
+    }
+    start() {
+        this.startTime = this.clock.time;
+        this.lastRealTime = this.startTime;
     }
     update() {
         const now = this.clock.time;
@@ -24,6 +29,9 @@ class TimeEngine {
             return beatIndex;
         }
         return null;
+    }
+    timeToBeat(time) {
+        return (time - this.startTime) * (this.bpm / 60000);
     }
     get preciseBeat() {
         return this.musicalBeat;

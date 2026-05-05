@@ -1,71 +1,88 @@
-import { NoteManager } from "./engine/NoteManager";
-import { TapNote } from "./core/Note";
+import { Clock } from "./engine/Clock";
+import { Game } from "./engine/Game";
+import { Chart } from "./core/ChartTypes";
 
-const manager = new NoteManager(
-  2,    // spawnWindow
-  0.15  // missWindow
-);
+const chart: Chart = {
+  bpm: 120,
+  offset: 0,
+  notes: [
+    { beat: 2, action: "DON", size: "small" },
 
-manager.load([
-  new TapNote(4.00, 1, "DON", "small"),
-  new TapNote(4.08, 2, "DON", "small"),
-  new TapNote(4.16, 3, "DON", "small"),
-]);
+    {
+      type: "roll",
+      startBeat: 4,
+      endBeat: 6,
+      action: "DON",
+      size: "small",
+    },
 
-let beat = 3.5;
+    { beat: 8, action: "DON", size: "small" },
 
-function step(b: number) {
-  beat = b;
+    { beat: 10, action: "DON", size: "small" },
+  ],
+};
 
-  console.log("\n=== BEAT", beat.toFixed(3), "===");
+const clock = new Clock();
+const game = new Game(clock, chart);
 
-  manager.update(beat);
+game.loadChart();
 
-  console.log(
-    "ACTIVE:",
-    manager.getActiveNotes.map(n => `${n.id}@${n.startBeat}`)
-  );
+let lastTime = Date.now();
 
-  const expired = manager.drainExpired();
+let tap2Hit = false;
+let tap10Hit = false;
 
-  for (const note of expired) {
-    console.log("MISS:", note.id);
+let spamInterval: NodeJS.Timeout | null = null;
+let rollSpamStarted = false;
+let rollSpamStopped = false;
+
+setTimeout(() => {
+  console.log("STATS:", game.getStats());
+}, 12000);
+
+setInterval(() => {
+  const now = Date.now();
+  const dt = now - lastTime;
+  lastTime = now;
+
+  game.update(dt);
+
+  const beat = game.getCurrentBeat();
+
+  // Tap no beat 2
+  if (!tap2Hit && beat >= 2) {
+    tap2Hit = true;
+    console.log("Tap 2:", game.handleInput("DON"));
   }
-}
 
-function hit(action: "DON" | "KATSU") {
-  console.log("\nINPUT:", action, "at", beat.toFixed(3));
+  // Começa spam do roll
+  if (!rollSpamStarted && beat >= 4) {
+    rollSpamStarted = true;
 
-  const note = manager.findClosestTap(beat, action, 0.12);
+    console.log("ROLL START SPAM");
 
-  if (!note) {
-    console.log("RESULT: no note");
-    return;
+    spamInterval = setInterval(() => {
+      const result = game.handleInput("DON");
+      if (result === "roll-hit") {
+        console.log("roll-hit");
+      }
+    }, 50);
   }
 
-  const delta = Math.abs(beat - note.startBeat);
+  // Para spam
+  if (rollSpamStarted && !rollSpamStopped && beat >= 6.2) {
+    rollSpamStopped = true;
 
-  let result = "bad";
+    if (spamInterval) clearInterval(spamInterval);
 
-  if (delta < 0.05) result = "perfect";
-  else if (delta < 0.09) result = "good";
+    console.log("ROLL END SPAM");
+  }
 
-  console.log("JUDGED:", note.id, "delta:", delta.toFixed(3));
-  console.log("RESULT:", result);
+  // NÃO vamos clicar no tap 8 (testar auto miss)
 
-  manager.remove(note);
-}
-
-step(3.8);   // spawn
-step(3.95);  // perto da nota 1
-
-hit("DON");  // deve pegar nota 1
-
-step(4.05);
-hit("DON");  // deve pegar nota 2
-
-step(4.20);  // nota 3 deve expirar
-
-step(4.30);
-
-step(4.32)
+  // Novo tap depois do miss
+  if (!tap10Hit && beat >= 10) {
+    tap10Hit = true;
+    console.log("Tap 10:", game.handleInput("DON"));
+  }
+}, 16);

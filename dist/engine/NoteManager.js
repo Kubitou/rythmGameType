@@ -81,8 +81,11 @@ class NoteManager {
             if (note.action !== action)
                 continue;
             const delta = Math.abs(currentBeat - note.startBeat);
-            if (delta <= window) {
+            if (Math.abs(delta) <= window) {
                 return note;
+            }
+            if (delta < -window) {
+                break;
             }
         }
         return null;
