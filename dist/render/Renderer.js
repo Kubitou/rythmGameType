@@ -1,4 +1,3 @@
-import { TapNote, RollNote } from "../core/Note.js";
 export class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
@@ -9,6 +8,7 @@ export class Renderer {
         this.HIT_X = 200;
         this.HIT_Y = this.GAME_HEIGHT / 2;
         this.scrollSpeed = 300;
+        this.cameraBeat = 0;
         this.ctx = canvas.getContext("2d");
         this.resize();
         window.addEventListener("resize", () => this.resize());
@@ -23,33 +23,41 @@ export class Renderer {
         return this.HIT_X + (noteBeat - currentBeat) * this.scrollSpeed;
     }
     render(game) {
-        const beat = game["timeEngine"].preciseBeat;
+        this.cameraBeat = game.getCurrentBeat();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.fillStyle = "red";
         this.ctx.fillRect(this.HIT_X * this.scaleX, this.HIT_Y * this.scaleY, 10, 50);
-        // ⚠️ gambiarra controlada (depois melhora)
-        const notes = game.noteManager.getActiveNotes;
+        const notes = game.getRenderNotes();
         for (const note of notes) {
-            let noteBeat = 0;
-            if (note instanceof TapNote) {
-                noteBeat = note.hitBeat;
+            if (note.kind === "roll") {
+                const startX = this.getNoteX(note.startBeat, this.cameraBeat);
+                const endX = this.getNoteX(note.endBeat, this.cameraBeat);
+                this.ctx.fillStyle = "orange";
+                this.ctx.fillRect(startX * this.scaleX, (this.HIT_Y - 10) * this.scaleY, (endX - startX) * this.scaleX, 20 * this.scaleY);
+                this.ctx.beginPath();
+                this.ctx.arc(startX * this.scaleX, this.HIT_Y * this.scaleY, 25 * this.scaleX, 0, Math.PI * 2);
+                this.ctx.fill();
+                continue;
             }
-            else if (note instanceof RollNote) {
-                noteBeat = note.startBeat;
+            const noteBeat = note.beat;
+            const x = this.getNoteX(noteBeat, this.cameraBeat);
+            if (note.action === "DON") {
+                this.ctx.fillStyle = "red";
             }
-            const x = this.getNoteX(noteBeat, beat);
-            this.ctx.fillStyle = "blue";
-            const delta = Math.abs(noteBeat - beat);
-            if (delta < 0.15) {
-                this.ctx.fillStyle = "green"; // perfect window
-            }
-            else if (delta < 0.3) {
-                this.ctx.fillStyle = "yellow"; // good
-            }
-            else {
+            if (note.action === "KATSU") {
                 this.ctx.fillStyle = "blue";
             }
-            this.ctx.fillRect(x * this.scaleX, (this.HIT_Y - 20) * this.scaleY, 40 * this.scaleX, 40 * this.scaleY);
+            // const delta = Math.abs(noteBeat - this.cameraBeat);
+            // if(delta < 0.15){
+            //   this.ctx.fillStyle = "green"; // perfect window
+            // } else if(delta < 0.3){
+            //   this.ctx.fillStyle = "yellow"; // good
+            // } else {
+            //   this.ctx.fillStyle = "blue";
+            // }
+            this.ctx.beginPath();
+            this.ctx.arc(x * this.scaleX, this.HIT_Y * this.scaleY, 20 * this.scaleX, 0, Math.PI * 2);
+            this.ctx.fill();
         }
         // console.log("ACTIVE NOTES:", (game as any).noteManager.getActiveNotes.length);
     }

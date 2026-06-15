@@ -12,14 +12,14 @@ const chart: Chart = {
     {
       type: "roll",
       startBeat: 4,
-      endBeat: 6,
+      endBeat: 10,
       action: "DON",
       size: "small",
     },
 
-    { beat: 8, action: "DON", size: "small" },
+    { beat: 11, action: "KATSU", size: "small" },
 
-    { beat: 10, action: "DON", size: "small" },
+    { beat: 13, action: "DON", size: "small" },
   ],
 };
 

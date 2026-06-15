@@ -98,5 +98,28 @@ export class Game {
     getStats() {
         return this.stats;
     }
+    getActiveNotes() {
+        return this.noteManager.getActiveNotes;
+    }
+    getRenderNotes() {
+        return this.noteManager.getActiveNotes.map(note => {
+            if (note instanceof RollNote) {
+                return {
+                    id: note.id,
+                    action: note.action,
+                    beat: note.startBeat,
+                    kind: "roll",
+                    startBeat: note.startBeat,
+                    endBeat: note.endBeat,
+                };
+            }
+            return {
+                id: note.id,
+                action: note.action,
+                kind: "tap",
+                beat: note.startBeat,
+            };
+        });
+    }
 }
 //# sourceMappingURL=Game.js.map

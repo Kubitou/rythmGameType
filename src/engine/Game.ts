@@ -14,6 +14,17 @@ type GameState =
 | "paused" 
 | "finished";
 
+type RenderNote = {
+  id: number;
+  beat: number;
+  action: "DON" | "KATSU";
+  //size: "small" | "big";
+  kind: "tap" | "roll";
+
+  startBeat?: number;
+  endBeat?: number;
+}
+
 export class Game {
   private SPAWN_WINDOW_BEAT: number = 4;
   private MISS_WINDOW_BEAT: number = 0.3;
@@ -152,5 +163,31 @@ export class Game {
 
   getStats(){
     return this.stats;
+  }
+
+  getActiveNotes(){
+    return this.noteManager.getActiveNotes;
+  }
+
+  getRenderNotes(): RenderNote[] {
+    return this.noteManager.getActiveNotes.map(note => {
+      if(note instanceof RollNote){
+        return{
+          id: note.id,
+          action: note.action,
+          beat: note.startBeat,
+          kind: "roll",
+          startBeat: note.startBeat,
+          endBeat: note.endBeat,
+        };
+      }
+
+      return {
+        id: note.id,
+        action: note.action,
+        kind: "tap",
+        beat: note.startBeat,
+      };
+    });
   }
 }
