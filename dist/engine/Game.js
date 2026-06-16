@@ -4,6 +4,7 @@ import { NoteManager } from "./NoteManager.js";
 import { Judge } from "./Judge.js";
 import { ComboManager } from "./ComboManager.js";
 import { HitStats } from "./HitStats.js";
+//type TimingMode = | "engine" | "audio";
 export class Game {
     registerHit(type, noteId) {
         this.stats.register({ type, noteId });
@@ -14,7 +15,7 @@ export class Game {
             this.comboManager.resetCombo();
         }
     }
-    constructor(clock, chart) {
+    constructor(clock, chart, beatSource) {
         this.clock = clock;
         this.chart = chart;
         this.SPAWN_WINDOW_BEAT = 4;
@@ -22,6 +23,7 @@ export class Game {
         this.timeScale = 1;
         this.state = "idle";
         this.timeEngine = new TimeEngine(clock, chart.bpm);
+        this.beatSource = beatSource !== null && beatSource !== void 0 ? beatSource : this.timeEngine;
         this.noteManager = new NoteManager(this.SPAWN_WINDOW_BEAT, this.MISS_WINDOW_BEAT);
         this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
         this.comboManager = new ComboManager();
@@ -37,7 +39,7 @@ export class Game {
     handleInput(action) {
         if (this.state !== "playing")
             return;
-        const currentBeat = this.timeEngine.preciseBeat;
+        const currentBeat = this.beatSource.getBeat();
         const activeRoll = this.noteManager.getActiveRoll();
         if (activeRoll && activeRoll.isActive) {
             const result = activeRoll.tryHit(action);
@@ -67,9 +69,11 @@ export class Game {
         if (this.state !== "playing")
             return;
         const scaleDt = dt * this.timeScale;
-        this.clock.advance(scaleDt);
-        this.timeEngine.update();
-        const beat = this.timeEngine.preciseBeat;
+        if (this.beatSource === this.timeEngine) {
+            this.clock.advance(scaleDt);
+            this.timeEngine.update();
+        }
+        const beat = this.beatSource.getBeat();
         this.noteManager.update(beat);
         for (const note of this.noteManager.getActiveNotes) {
             if (note instanceof RollNote) {
@@ -88,12 +92,11 @@ export class Game {
                     noteId: note.id
                 };
                 this.registerHit("miss", note.id);
-                this.comboManager.resetCombo();
             }
         }
     }
     getCurrentBeat() {
-        return this.timeEngine.preciseBeat;
+        return this.beatSource.getBeat();
     }
     getStats() {
         return this.stats;

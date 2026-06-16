@@ -2,10 +2,13 @@ import { Clock } from "./engine/Clock.js";
 import { Game } from "./engine/Game.js";
 import { Chart } from "./core/ChartTypes.js";
 import { Renderer } from "./render/Renderer.js";
+import { AudioManager } from "./engine/AudioManager.js";
+import { AudioBeatSource } from "./engine/AudioBeatSource.js";
 
 const chart: Chart = {
   bpm: 120,
   offset: 0,
+
   notes: [
     { beat: 2, action: "DON", size: "small" },
 
@@ -18,100 +21,78 @@ const chart: Chart = {
     },
 
     { beat: 11, action: "KATSU", size: "small" },
-
     { beat: 13, action: "DON", size: "small" },
   ],
 };
 
-const clock = new Clock();
-const game = new Game(clock, chart);
+const audioManager = new AudioManager(
+  "./assets/music/alienalien.mp3", 120, 0
+);
 
-const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+const beatSource = new AudioBeatSource(
+  audioManager,
+  chart.bpm,
+  chart.offset
+);
+
+const clock = new Clock();
+
+const game = new Game(
+  clock,
+  chart,
+  beatSource
+);
+
+const canvas = document.getElementById(
+  "gameCanvas"
+) as HTMLCanvasElement;
 
 const renderer = new Renderer(canvas);
 
-game.start();
+let started = false;
+
+window.addEventListener("keydown", async (e) => {
+
+  if (e.key === " ") {
+
+    if (started) return;
+
+    started = true;
+
+    game.start();
+
+    await audioManager.play();
+
+    console.log("START");
+  }
+
+  if (e.key === "f") {
+    console.log(
+      "DON:",
+      game.handleInput("DON")
+    );
+  }
+
+  if (e.key === "j") {
+    console.log(
+      "KATSU:",
+      game.handleInput("KATSU")
+    );
+  }
+});
 
 let lastTime = performance.now();
 
-function loop(now: number){
+function loop(now: number) {
+
   const dt = now - lastTime;
   lastTime = now;
-  // console.log("BEAT:", game.getCurrentBeat());
 
   game.update(dt);
+
   renderer.render(game);
 
   requestAnimationFrame(loop);
 }
 
 requestAnimationFrame(loop);
-
-window.addEventListener("keydown", (e) => {
-  if(e.key === "f") game.handleInput("DON");
-  if(e.key === "j") game.handleInput("KATSU");
-  if(e.key === "1") game.setTimeScale(1);
-  if(e.key === "2") game.setTimeScale(0.5);
-  if(e.key === "3"){
-    game.setTimeScale(0.25);
-    console.log("pressed");
-  } 
-});
-
-// let tap2Hit = false;
-// let tap10Hit = false;
-
-// let spamInterval: NodeJS.Timeout | null = null;
-// let rollSpamStarted = false;
-// let rollSpamStopped = false;
-
-// setTimeout(() => {
-//   console.log("STATS:", game.getStats());
-// }, 12000);
-
-// setInterval(() => {
-//   const now = Date.now();
-//   const dt = now - lastTime;
-//   lastTime = now;
-
-//   game.update(dt);
-
-//   const beat = game.getCurrentBeat();
-
-//   // Tap no beat 2
-//   if (!tap2Hit && beat >= 2) {
-//     tap2Hit = true;
-//     console.log("Tap 2:", game.handleInput("DON"));
-//   }
-
-//   // Começa spam do roll
-//   if (!rollSpamStarted && beat >= 4) {
-//     rollSpamStarted = true;
-
-//     console.log("ROLL START SPAM");
-
-//     spamInterval = setInterval(() => {
-//       const result = game.handleInput("DON");
-//       if (result === "roll-hit") {
-//         console.log("roll-hit");
-//       }
-//     }, 50);
-//   }
-
-//   // Para spam
-//   if (rollSpamStarted && !rollSpamStopped && beat >= 6.2) {
-//     rollSpamStopped = true;
-
-//     if (spamInterval) clearInterval(spamInterval);
-
-//     console.log("ROLL END SPAM");
-//   }
-
-//   // NÃO vamos clicar no tap 8 (testar auto miss)
-
-//   // Novo tap depois do miss
-//   if (!tap10Hit && beat >= 10) {
-//     tap10Hit = true;
-//     console.log("Tap 10:", game.handleInput("DON"));
-//   }
-// }, 16);

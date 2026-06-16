@@ -8,6 +8,9 @@ export class TimeEngine {
         this.lastBeatIndex = -1;
         this.measure = 4;
     }
+    getBeat() {
+        return this.preciseBeat;
+    }
     start() {
         this.startTime = this.clock.time;
         this.lastRealTime = this.startTime;

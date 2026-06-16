@@ -7,12 +7,13 @@ import { Judge } from "./Judge.js";
 import { ComboManager } from "./ComboManager.js";
 import { HitStats } from "./HitStats.js";
 import { HitEvent } from "../core/HitEvent.js";
+import { BeatSource } from "./BeatSource.js";
 
-type GameState = 
-| "idle" 
-| "playing" 
-| "paused" 
-| "finished";
+type GameState =
+  | "idle"
+  | "playing"
+  | "paused"
+  | "finished";
 
 type RenderNote = {
   id: number;
@@ -25,11 +26,15 @@ type RenderNote = {
   endBeat?: number;
 }
 
+//type TimingMode = | "engine" | "audio";
+
 export class Game {
   private SPAWN_WINDOW_BEAT: number = 4;
   private MISS_WINDOW_BEAT: number = 0.3;
 
   private timeEngine: TimeEngine;
+  private beatSource: BeatSource;
+
   private noteManager: NoteManager;
   private judge: Judge;
   private comboManager: ComboManager;
@@ -39,10 +44,10 @@ export class Game {
 
   private state: GameState = "idle";
 
-  private registerHit(type: HitEvent["type"], noteId: number){
-    this.stats.register({type, noteId});
-    
-    if(type === "perfect" || type === "good"){
+  private registerHit(type: HitEvent["type"], noteId: number) {
+    this.stats.register({ type, noteId });
+
+    if (type === "perfect" || type === "good") {
       this.comboManager.incrementCombo();
     } else {
       this.comboManager.resetCombo();
@@ -52,8 +57,10 @@ export class Game {
   constructor(
     private clock: Clock,
     private chart: Chart,
+    beatSource?: BeatSource
   ) {
     this.timeEngine = new TimeEngine(clock, chart.bpm);
+    this.beatSource = beatSource ?? this.timeEngine;
 
     this.noteManager = new NoteManager(
       this.SPAWN_WINDOW_BEAT,
@@ -65,19 +72,19 @@ export class Game {
     this.stats = new HitStats();
   }
 
-  setTimeScale(scale: number){
+  setTimeScale(scale: number) {
     this.timeScale = scale;
   }
 
-  start(){
+  start() {
     this.loadChart();
     this.state = "playing";
   }
 
   handleInput(action: "DON" | "KATSU") {
-    if(this.state !== "playing") return;
+    if (this.state !== "playing") return;
 
-    const currentBeat = this.timeEngine.preciseBeat;
+    const currentBeat = this.beatSource.getBeat();
 
     const activeRoll = this.noteManager.getActiveRoll();
     if (activeRoll && activeRoll.isActive) {
@@ -91,9 +98,9 @@ export class Game {
 
     const result = this.judge.tryHit(currentBeat, action);
 
-    if(result)
+    if (result)
       this.registerHit(result, this.judge.lastHitNoteId);
-   
+
     return result;
   }
 
@@ -122,14 +129,15 @@ export class Game {
   }
 
   update(dt: number) {
-    if(this.state !== "playing") return;
+    if (this.state !== "playing") return;
 
     const scaleDt = dt * this.timeScale;
 
-    this.clock.advance(scaleDt);
-    this.timeEngine.update();
-
-    const beat = this.timeEngine.preciseBeat;
+    if (this.beatSource === this.timeEngine) {
+      this.clock.advance(scaleDt);
+      this.timeEngine.update();
+    }
+    const beat = this.beatSource.getBeat();
 
     this.noteManager.update(beat);
 
@@ -141,38 +149,37 @@ export class Game {
     }
 
     const expired = this.noteManager.drainExpired();
-    
-    for(const note of expired){
+
+    for (const note of expired) {
       // console.log("EXPIRED:", note.id, note.constructor.name);
 
-      if(note instanceof TapNote){
+      if (note instanceof TapNote) {
         // console.log("MISS REGISTERED:", note.id);
         const event: HitEvent = {
-        type: "miss",
-        noteId: note.id
-      }
-      this.registerHit("miss", note.id);
-      this.comboManager.resetCombo();
+          type: "miss",
+          noteId: note.id
+        }
+        this.registerHit("miss", note.id);
       }
     }
   }
 
   getCurrentBeat() {
-    return this.timeEngine.preciseBeat;
+    return this.beatSource.getBeat();
   }
 
-  getStats(){
+  getStats() {
     return this.stats;
   }
 
-  getActiveNotes(){
+  getActiveNotes() {
     return this.noteManager.getActiveNotes;
   }
 
   getRenderNotes(): RenderNote[] {
     return this.noteManager.getActiveNotes.map(note => {
-      if(note instanceof RollNote){
-        return{
+      if (note instanceof RollNote) {
+        return {
           id: note.id,
           action: note.action,
           beat: note.startBeat,

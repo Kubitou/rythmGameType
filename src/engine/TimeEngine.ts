@@ -1,6 +1,7 @@
 import { Clock } from "./Clock.js";
+import { BeatSource } from "./BeatSource.js";
 
-export class TimeEngine{
+export class TimeEngine implements BeatSource{
     private startTime = 0;
     private musicalBeat = 0;
     private lastRealTime = 0;
@@ -8,6 +9,10 @@ export class TimeEngine{
     private measure = 4;
 
     constructor(private clock: Clock, private bpm: number){}
+    
+    getBeat(): number {
+        return this.preciseBeat;
+    }
 
     start(){
         this.startTime = this.clock.time;

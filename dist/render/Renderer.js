@@ -9,6 +9,7 @@ export class Renderer {
         this.HIT_Y = this.GAME_HEIGHT / 2;
         this.scrollSpeed = 300;
         this.cameraBeat = 0;
+        this.feedBack = null;
         this.ctx = canvas.getContext("2d");
         this.resize();
         window.addEventListener("resize", () => this.resize());
@@ -26,7 +27,7 @@ export class Renderer {
         this.cameraBeat = game.getCurrentBeat();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.fillStyle = "red";
-        this.ctx.fillRect(this.HIT_X * this.scaleX, this.HIT_Y * this.scaleY, 10, 50);
+        this.ctx.fillRect(this.HIT_X * this.scaleX, this.HIT_Y * this.scaleY - 45 * this.scaleY, 10 * this.scaleX, 90 * this.scaleY);
         const notes = game.getRenderNotes();
         for (const note of notes) {
             if (note.kind === "roll") {

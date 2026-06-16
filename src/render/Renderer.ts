@@ -1,5 +1,9 @@
 import { Game } from "../engine/Game.js";
-import { TapNote, RollNote } from "../core/Note.js";
+
+type HitFeedback = {
+  text: string;
+  remainingTime: number;
+}
 
 export class Renderer {
   private ctx: CanvasRenderingContext2D;
@@ -16,6 +20,8 @@ export class Renderer {
   private scrollSpeed = 300;
 
   private cameraBeat = 0;
+
+  private feedBack: HitFeedback | null = null;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext("2d")!;
@@ -43,9 +49,9 @@ export class Renderer {
     this.ctx.fillStyle = "red";
     this.ctx.fillRect(
       this.HIT_X * this.scaleX,
-      this.HIT_Y * this.scaleY,
-      10,
-      50,
+      this.HIT_Y * this.scaleY - 45 * this.scaleY,
+      10 * this.scaleX,
+      90 * this.scaleY,
     );
 
     const notes = game.getRenderNotes();
