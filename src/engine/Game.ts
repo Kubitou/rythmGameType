@@ -8,6 +8,7 @@ import { ComboManager } from "./ComboManager.js";
 import { HitStats } from "./HitStats.js";
 import { HitEvent } from "../core/HitEvent.js";
 import { BeatSource } from "./BeatSource.js";
+import { RenderConfig } from "../core/RenderConfig.js";
 
 type GameState =
   | "idle"
@@ -29,7 +30,7 @@ type RenderNote = {
 //type TimingMode = | "engine" | "audio";
 
 export class Game {
-  private SPAWN_WINDOW_BEAT: number = 4;
+  private SPAWN_WINDOW_BEAT: number = RenderConfig.SPAWN_WINDOW_BEAT;
   private MISS_WINDOW_BEAT: number = 0.3;
 
   private timeEngine: TimeEngine;
@@ -155,10 +156,6 @@ export class Game {
 
       if (note instanceof TapNote) {
         // console.log("MISS REGISTERED:", note.id);
-        const event: HitEvent = {
-          type: "miss",
-          noteId: note.id
-        }
         this.registerHit("miss", note.id);
       }
     }
@@ -172,9 +169,9 @@ export class Game {
     return this.stats;
   }
 
-  getActiveNotes() {
-    return this.noteManager.getActiveNotes;
-  }
+  // getActiveNotes() {
+  //   return this.noteManager.getActiveNotes;
+  // }
 
   getRenderNotes(): RenderNote[] {
     return this.noteManager.getActiveNotes.map(note => {

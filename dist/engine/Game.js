@@ -4,6 +4,7 @@ import { NoteManager } from "./NoteManager.js";
 import { Judge } from "./Judge.js";
 import { ComboManager } from "./ComboManager.js";
 import { HitStats } from "./HitStats.js";
+import { RenderConfig } from "../core/RenderConfig.js";
 //type TimingMode = | "engine" | "audio";
 export class Game {
     registerHit(type, noteId) {
@@ -18,7 +19,7 @@ export class Game {
     constructor(clock, chart, beatSource) {
         this.clock = clock;
         this.chart = chart;
-        this.SPAWN_WINDOW_BEAT = 4;
+        this.SPAWN_WINDOW_BEAT = RenderConfig.SPAWN_WINDOW_BEAT;
         this.MISS_WINDOW_BEAT = 0.3;
         this.timeScale = 1;
         this.state = "idle";
@@ -87,10 +88,6 @@ export class Game {
             // console.log("EXPIRED:", note.id, note.constructor.name);
             if (note instanceof TapNote) {
                 // console.log("MISS REGISTERED:", note.id);
-                const event = {
-                    type: "miss",
-                    noteId: note.id
-                };
                 this.registerHit("miss", note.id);
             }
         }
@@ -101,9 +98,9 @@ export class Game {
     getStats() {
         return this.stats;
     }
-    getActiveNotes() {
-        return this.noteManager.getActiveNotes;
-    }
+    // getActiveNotes() {
+    //   return this.noteManager.getActiveNotes;
+    // }
     getRenderNotes() {
         return this.noteManager.getActiveNotes.map(note => {
             if (note instanceof RollNote) {

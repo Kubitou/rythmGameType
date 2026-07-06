@@ -1,13 +1,15 @@
+import { RenderConfig } from "../core/RenderConfig.js";
 export class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
-        this.GAME_WIDTH = 1280;
-        this.GAME_HEIGHT = 720;
+        this.GAME_WIDTH = RenderConfig.GAME_WIDTH;
+        this.GAME_HEIGHT = RenderConfig.GAME_HEIGHT;
         this.scaleX = 1;
         this.scaleY = 1;
-        this.HIT_X = 200;
+        this.HIT_X = RenderConfig.HIT_X;
         this.HIT_Y = this.GAME_HEIGHT / 2;
-        this.scrollSpeed = 300;
+        this.scrollSpeed = RenderConfig.SCROLL_SPEED;
+        this.spawnBeatDistance = 0;
         this.cameraBeat = 0;
         this.feedBack = null;
         this.ctx = canvas.getContext("2d");
@@ -19,6 +21,7 @@ export class Renderer {
         this.canvas.height = window.innerHeight;
         this.scaleX = this.canvas.width / this.GAME_WIDTH;
         this.scaleY = this.canvas.height / this.GAME_HEIGHT;
+        this.spawnBeatDistance = (this.GAME_WIDTH - this.HIT_X) / this.scrollSpeed;
     }
     getNoteX(noteBeat, currentBeat) {
         return this.HIT_X + (noteBeat - currentBeat) * this.scrollSpeed;

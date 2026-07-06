@@ -1,18 +1,14 @@
 import { BeatSource } from "./BeatSource";
 
-export class AudioManager implements BeatSource{
+export class AudioManager{
     private audio: HTMLAudioElement;
 
-    constructor(path: string, private bpm: number, private offset: number = 0){ 
+    constructor(path: string){ 
         this.audio = new Audio(path);
     }
 
-    getBeat(): number {
-        return this.offset + this.audio.currentTime * (this.bpm / 60);
-    }
-
-    play(){
-        this.audio.play();
+    async play(){
+        await this.audio.play();
     }
 
     pause(){

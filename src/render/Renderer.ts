@@ -1,3 +1,4 @@
+import { RenderConfig } from "../core/RenderConfig.js";
 import { Game } from "../engine/Game.js";
 
 type HitFeedback = {
@@ -8,16 +9,17 @@ type HitFeedback = {
 export class Renderer {
   private ctx: CanvasRenderingContext2D;
 
-  private GAME_WIDTH = 1280;
-  private GAME_HEIGHT = 720;
+  private GAME_WIDTH = RenderConfig.GAME_WIDTH;
+  private GAME_HEIGHT = RenderConfig.GAME_HEIGHT;
 
   private scaleX = 1;
   private scaleY = 1;
 
-  private HIT_X = 200;
+  private HIT_X = RenderConfig.HIT_X;
   private HIT_Y = this.GAME_HEIGHT / 2;
 
-  private scrollSpeed = 300;
+  private scrollSpeed = RenderConfig.SCROLL_SPEED;
+  private spawnBeatDistance = 0;
 
   private cameraBeat = 0;
 
@@ -35,6 +37,8 @@ export class Renderer {
 
     this.scaleX = this.canvas.width / this.GAME_WIDTH;
     this.scaleY = this.canvas.height / this.GAME_HEIGHT;
+
+    this.spawnBeatDistance = (this.GAME_WIDTH - this.HIT_X) / this.scrollSpeed;
   }
 
   private getNoteX(noteBeat: number, currentBeat: number) {

@@ -1,16 +1,17 @@
-export type InputAction = "DON" | "KATSU";
+import { Game } from "../engine/Game";
 
 export class PlayerInput{
-    constructor(private onInput: (action: InputAction) => void){
-        process.stdin.setRawMode(true);
-        process.stdin.resume();
-        process.stdin.setEncoding("utf8");
-
-        process.stdin.on("data", (key: string) => {
-            if(key === "d") this.onInput("DON");
-            if(key === "k") this.onInput("KATSU");
-
-            if(key === "\u0003") process.exit();
-        });
+    constructor(private game: Game){}  
+    
+    handleKey(code: string){
+        switch (code) {
+            case "KeyF":
+                this.game.handleInput("DON");
+                break;
+        
+            case "KeyJ":
+                this.game.handleInput("KATSU");
+                break;
+        }
     }
 }
