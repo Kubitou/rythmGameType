@@ -7,7 +7,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-console.log("MAIN CARREGOU");
 import { Clock } from "./engine/Clock.js";
 import { Game } from "./engine/Game.js";
 import { Renderer } from "./render/Renderer.js";
@@ -55,13 +54,14 @@ window.addEventListener("keydown", (e) => __awaiter(void 0, void 0, void 0, func
     input.handleKey(e.code);
 }));
 let lastTime = performance.now();
-console.log("notloop");
 function loop(now) {
-    console.log("loop");
     const dt = now - lastTime;
     lastTime = now;
     if (started) {
-        console.log(beatSource.getBeat().toFixed(3), audioManager.getCurrentTime().toFixed(3));
+        // console.log(
+        //     beatSource.getBeat().toFixed(3),
+        //     audioManager.getCurrentTime().toFixed(3)
+        // );
         game.update(dt);
     }
     renderer.render(game);

@@ -1,4 +1,4 @@
-import { RenderConfig } from "../core/RenderConfig.js";
+import { RenderConfig } from "./RenderConfig.js";
 import { Game } from "../engine/Game.js";
 
 type HitFeedback = {
@@ -45,7 +45,7 @@ export class Renderer {
     return this.HIT_X + (noteBeat - currentBeat) * this.scrollSpeed;
   }
 
-  render(game: Game) {
+  public render(game: Game) {
     this.cameraBeat = game.getCurrentBeat();
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -115,9 +115,38 @@ export class Renderer {
         Math.PI * 2
       );
       this.ctx.fill();
-
-
     }
     // console.log("ACTIVE NOTES:", (game as any).noteManager.getActiveNotes.length);
+    this.ctx.font = "40px Arial";
+      this.ctx.textAlign = "center";
+
+      const hudData = game.getHudData()
+      this.ctx.fillText(
+        hudData.lastJudment ?? "",
+        this.canvas.width / 2,
+        130
+      );
+
+      this.ctx.fillText(
+        `Combo ${hudData.combo}`,
+        this.canvas.width / 2,
+        190
+      );
+
+      this.ctx.font = "20px Arial";
+      this.ctx.fillText(
+        `Score ${hudData.score}`,
+        this.canvas.width / 2,
+        220
+      );
   }
+  private clear(){}
+
+  private drawBackGround(){}
+
+  private drawNotes(){}
+
+  private drawHud(){}
+
+  private drawDebug(){}
 }

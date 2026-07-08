@@ -1,4 +1,3 @@
-console.log("MAIN CARREGOU");
 import { Clock } from "./engine/Clock.js";
 import { Game } from "./engine/Game.js";
 import { Chart } from "./core/ChartTypes.js";
@@ -78,20 +77,16 @@ window.addEventListener("keydown", async (e) => {
 
 let lastTime = performance.now();
 
-  console.log("notloop");
-
 function loop(now: number) {
-
-  console.log("loop");
 
   const dt = now - lastTime;
   lastTime = now;
 
   if(started){
-    console.log(
-        beatSource.getBeat().toFixed(3),
-        audioManager.getCurrentTime().toFixed(3)
-    );
+    // console.log(
+    //     beatSource.getBeat().toFixed(3),
+    //     audioManager.getCurrentTime().toFixed(3)
+    // );
     game.update(dt);
   }
 

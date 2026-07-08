@@ -5,10 +5,11 @@ import { TimeEngine } from "./TimeEngine.js";
 import { NoteManager } from "./NoteManager.js";
 import { Judge } from "./Judge.js";
 import { ComboManager } from "./ComboManager.js";
-import { HitStats } from "./HitStats.js";
 import { HitEvent } from "../core/HitEvent.js";
 import { BeatSource } from "./BeatSource.js";
-import { RenderConfig } from "../core/RenderConfig.js";
+import { RenderConfig } from "../render/RenderConfig.js";
+import { GameplayConfig } from "../core/GameplayConfig.js";
+import { ScoreManager } from "./ScoreManager.js"
 
 type GameState =
   | "idle"
@@ -27,11 +28,17 @@ type RenderNote = {
   endBeat?: number;
 }
 
+type HudData = {
+  combo: number;
+  score: number;
+  lastJudment: HitEvent["type"] | null;
+}
+
 //type TimingMode = | "engine" | "audio";
 
 export class Game {
   private SPAWN_WINDOW_BEAT: number = RenderConfig.SPAWN_WINDOW_BEAT;
-  private MISS_WINDOW_BEAT: number = 0.3;
+  private MISS_WINDOW_BEAT: number = GameplayConfig.MISS_WINDOW_BEAT;
 
   private timeEngine: TimeEngine;
   private beatSource: BeatSource;
@@ -39,19 +46,34 @@ export class Game {
   private noteManager: NoteManager;
   private judge: Judge;
   private comboManager: ComboManager;
-  private stats: HitStats;
+  private score: ScoreManager;
 
   private timeScale = 1;
 
   private state: GameState = "idle";
 
-  private registerHit(type: HitEvent["type"], noteId: number) {
-    this.stats.register({ type, noteId });
+  private lastJudment: HitEvent["type"] | null = null;
 
-    if (type === "perfect" || type === "good") {
-      this.comboManager.incrementCombo();
-    } else {
-      this.comboManager.resetCombo();
+  private registerHit(type: HitEvent["type"], noteId: number) {
+    console.log(type);
+    this.lastJudment = type;
+
+    this.score.register({ type, noteId });
+
+    switch (type) {
+      case "perfect":
+      case "good":
+      case "bad":
+        this.comboManager.incrementCombo();
+        break;
+
+      case "miss":
+        this.comboManager.resetCombo();
+        break;
+
+      case "roll-hit":
+
+        break;
     }
   }
 
@@ -70,7 +92,7 @@ export class Game {
 
     this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
     this.comboManager = new ComboManager();
-    this.stats = new HitStats();
+    this.score = new ScoreManager();
   }
 
   setTimeScale(scale: number) {
@@ -166,7 +188,7 @@ export class Game {
   }
 
   getStats() {
-    return this.stats;
+    return this.score;
   }
 
   // getActiveNotes() {
@@ -193,5 +215,13 @@ export class Game {
         beat: note.startBeat,
       };
     });
+  }
+
+  getHudData(): HudData {
+    return {
+      combo: this.comboManager.getCurrentCombo,
+      score: this.score.getScore,
+      lastJudment: this.lastJudment
+    };
   }
 }

@@ -3,32 +3,42 @@ import { TimeEngine } from "./TimeEngine.js";
 import { NoteManager } from "./NoteManager.js";
 import { Judge } from "./Judge.js";
 import { ComboManager } from "./ComboManager.js";
-import { HitStats } from "./HitStats.js";
-import { RenderConfig } from "../core/RenderConfig.js";
+import { RenderConfig } from "../render/RenderConfig.js";
+import { GameplayConfig } from "../core/GameplayConfig.js";
+import { ScoreManager } from "./ScoreManager.js";
 //type TimingMode = | "engine" | "audio";
 export class Game {
     registerHit(type, noteId) {
-        this.stats.register({ type, noteId });
-        if (type === "perfect" || type === "good") {
-            this.comboManager.incrementCombo();
-        }
-        else {
-            this.comboManager.resetCombo();
+        console.log(type);
+        this.lastJudment = type;
+        this.score.register({ type, noteId });
+        switch (type) {
+            case "perfect":
+            case "good":
+            case "bad":
+                this.comboManager.incrementCombo();
+                break;
+            case "miss":
+                this.comboManager.resetCombo();
+                break;
+            case "roll-hit":
+                break;
         }
     }
     constructor(clock, chart, beatSource) {
         this.clock = clock;
         this.chart = chart;
         this.SPAWN_WINDOW_BEAT = RenderConfig.SPAWN_WINDOW_BEAT;
-        this.MISS_WINDOW_BEAT = 0.3;
+        this.MISS_WINDOW_BEAT = GameplayConfig.MISS_WINDOW_BEAT;
         this.timeScale = 1;
         this.state = "idle";
+        this.lastJudment = null;
         this.timeEngine = new TimeEngine(clock, chart.bpm);
         this.beatSource = beatSource !== null && beatSource !== void 0 ? beatSource : this.timeEngine;
         this.noteManager = new NoteManager(this.SPAWN_WINDOW_BEAT, this.MISS_WINDOW_BEAT);
         this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
         this.comboManager = new ComboManager();
-        this.stats = new HitStats();
+        this.score = new ScoreManager();
     }
     setTimeScale(scale) {
         this.timeScale = scale;
@@ -96,7 +106,7 @@ export class Game {
         return this.beatSource.getBeat();
     }
     getStats() {
-        return this.stats;
+        return this.score;
     }
     // getActiveNotes() {
     //   return this.noteManager.getActiveNotes;
@@ -120,6 +130,13 @@ export class Game {
                 beat: note.startBeat,
             };
         });
+    }
+    getHudData() {
+        return {
+            combo: this.comboManager.getCurrentCombo,
+            score: this.score.getScore,
+            lastJudment: this.lastJudment
+        };
     }
 }
 //# sourceMappingURL=Game.js.map

@@ -1,4 +1,4 @@
-import { RenderConfig } from "../core/RenderConfig.js";
+import { RenderConfig } from "./RenderConfig.js";
 export class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
@@ -27,6 +27,7 @@ export class Renderer {
         return this.HIT_X + (noteBeat - currentBeat) * this.scrollSpeed;
     }
     render(game) {
+        var _a;
         this.cameraBeat = game.getCurrentBeat();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.fillStyle = "red";
@@ -64,6 +65,18 @@ export class Renderer {
             this.ctx.fill();
         }
         // console.log("ACTIVE NOTES:", (game as any).noteManager.getActiveNotes.length);
+        this.ctx.font = "40px Arial";
+        this.ctx.textAlign = "center";
+        const hudData = game.getHudData();
+        this.ctx.fillText((_a = hudData.lastJudment) !== null && _a !== void 0 ? _a : "", this.canvas.width / 2, 130);
+        this.ctx.fillText(`Combo ${hudData.combo}`, this.canvas.width / 2, 190);
+        this.ctx.font = "20px Arial";
+        this.ctx.fillText(`Score ${hudData.score}`, this.canvas.width / 2, 220);
     }
+    clear() { }
+    drawBackGround() { }
+    drawNotes() { }
+    drawHud() { }
+    drawDebug() { }
 }
 //# sourceMappingURL=Renderer.js.map
