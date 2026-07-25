@@ -9,9 +9,8 @@ import { ScoreManager } from "./ScoreManager.js";
 //type TimingMode = | "engine" | "audio";
 export class Game {
     registerHit(type, noteId) {
-        console.log(type);
         this.lastJudment = type;
-        this.score.register({ type, noteId });
+        this.scoreManager.register({ type, noteId });
         switch (type) {
             case "perfect":
             case "good":
@@ -31,6 +30,8 @@ export class Game {
         this.SPAWN_WINDOW_BEAT = RenderConfig.SPAWN_WINDOW_BEAT;
         this.MISS_WINDOW_BEAT = GameplayConfig.MISS_WINDOW_BEAT;
         this.timeScale = 1;
+        this.lastBeat = 0;
+        this.countdown = 0;
         this.state = "idle";
         this.lastJudment = null;
         this.timeEngine = new TimeEngine(clock, chart.bpm);
@@ -38,14 +39,30 @@ export class Game {
         this.noteManager = new NoteManager(this.SPAWN_WINDOW_BEAT, this.MISS_WINDOW_BEAT);
         this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
         this.comboManager = new ComboManager();
-        this.score = new ScoreManager();
+        this.scoreManager = new ScoreManager();
     }
     setTimeScale(scale) {
         this.timeScale = scale;
     }
     start() {
+        if (this.state !== "idle")
+            return;
         this.loadChart();
+        this.state = "countdown";
+        this.countdown = 3;
+    }
+    pause() {
+        if (this.state !== "playing")
+            return;
+        this.state = "paused";
+    }
+    resume() {
+        if (this.state !== "paused")
+            return;
         this.state = "playing";
+    }
+    finish() {
+        this.state = "results";
     }
     handleInput(action) {
         if (this.state !== "playing")
@@ -77,6 +94,10 @@ export class Game {
         this.noteManager.load(notes);
     }
     update(dt) {
+        if (this.state === "countdown") {
+            this.updateCountdown(dt);
+            return;
+        }
         if (this.state !== "playing")
             return;
         const scaleDt = dt * this.timeScale;
@@ -102,11 +123,24 @@ export class Game {
             }
         }
     }
+    updateCountdown(dt) {
+        const delta = dt / 1000;
+        this.countdown -= delta;
+        if (this.countdown <= 0) {
+            this.state = "playing";
+        }
+    }
     getCurrentBeat() {
         return this.beatSource.getBeat();
     }
-    getStats() {
-        return this.score;
+    getScoreManager() {
+        return this.scoreManager;
+    }
+    getState() {
+        return this.state;
+    }
+    getCountdown() {
+        return Math.ceil(this.countdown);
     }
     // getActiveNotes() {
     //   return this.noteManager.getActiveNotes;
@@ -134,7 +168,7 @@ export class Game {
     getHudData() {
         return {
             combo: this.comboManager.getCurrentCombo,
-            score: this.score.getScore,
+            score: this.scoreManager.getScore,
             lastJudment: this.lastJudment
         };
     }

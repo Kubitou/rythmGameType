@@ -49,27 +49,39 @@ const game = new Game(
   beatSource
 );
 
-const canvas = document.getElementById(
-  "gameCanvas"
-) as HTMLCanvasElement;
+const renderer = new Renderer(
+  document.getElementById("gameCanvas") as HTMLCanvasElement
+);
 
-const renderer = new Renderer(canvas);
+const input = new PlayerInput(game);
 
 let started = false;
-const input = new PlayerInput(game);
+let musicStarted = false;
 
 window.addEventListener("keydown", async (e) => {
 
-  if (e.key === " ") {
+  switch (e.code) {
 
-    if (started) return;
+    case "Space":
 
-    started = true;
+      if (!started) {
+        started = true;
+        game.start();              // entra em countdown
+      }
 
-    await audioManager.play();
-    game.start();
+      break;
 
-    console.log("START");
+    case "Escape":
+
+      if (game.getState() === "playing") {
+        game.pause();
+        audioManager.pause();
+      } else if (game.getState() === "paused") {
+        game.resume();
+        await audioManager.play();
+      }
+
+      break;
   }
 
   input.handleKey(e.code);
@@ -82,12 +94,24 @@ function loop(now: number) {
   const dt = now - lastTime;
   lastTime = now;
 
-  if(started){
-    // console.log(
-    //     beatSource.getBeat().toFixed(3),
-    //     audioManager.getCurrentTime().toFixed(3)
-    // );
+  if (started) {
+
     game.update(dt);
+
+    if (
+      !musicStarted &&
+      game.getState() === "playing"
+    ) {
+      musicStarted = true;
+      audioManager.play();
+    }
+
+    if (
+      musicStarted &&
+      audioManager.getCurrentTime() >= audioManager.getDuration()
+    ) {
+      game.finish();
+    }
   }
 
   renderer.render(game);

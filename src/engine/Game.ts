@@ -13,9 +13,10 @@ import { ScoreManager } from "./ScoreManager.js"
 
 type GameState =
   | "idle"
+  | "countdown"
   | "playing"
   | "paused"
-  | "finished";
+  | "results";
 
 type RenderNote = {
   id: number;
@@ -46,19 +47,20 @@ export class Game {
   private noteManager: NoteManager;
   private judge: Judge;
   private comboManager: ComboManager;
-  private score: ScoreManager;
+  private scoreManager: ScoreManager;
 
   private timeScale = 1;
+  private lastBeat = 0;
+  private countdown = 0;
 
   private state: GameState = "idle";
 
   private lastJudment: HitEvent["type"] | null = null;
 
   private registerHit(type: HitEvent["type"], noteId: number) {
-    console.log(type);
     this.lastJudment = type;
 
-    this.score.register({ type, noteId });
+    this.scoreManager.register({ type, noteId });
 
     switch (type) {
       case "perfect":
@@ -77,6 +79,7 @@ export class Game {
     }
   }
 
+
   constructor(
     private clock: Clock,
     private chart: Chart,
@@ -92,7 +95,7 @@ export class Game {
 
     this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
     this.comboManager = new ComboManager();
-    this.score = new ScoreManager();
+    this.scoreManager = new ScoreManager();
   }
 
   setTimeScale(scale: number) {
@@ -100,8 +103,29 @@ export class Game {
   }
 
   start() {
+    if(this.state !== "idle") return;
+
     this.loadChart();
+
+    this.state = "countdown";
+
+    this.countdown = 3;
+  }
+
+  pause(){
+    if(this.state !== "playing") return;
+
+    this.state = "paused";
+  }
+
+  resume(){
+    if(this.state !== "paused") return;
+
     this.state = "playing";
+  }
+
+  finish() {
+    this.state = "results";
   }
 
   handleInput(action: "DON" | "KATSU") {
@@ -127,7 +151,7 @@ export class Game {
     return result;
   }
 
-  loadChart() {
+  private loadChart() {
     let id = 1;
     let notes: Note[] = [];
 
@@ -149,10 +173,16 @@ export class Game {
       );
     }
     this.noteManager.load(notes);
+    
   }
 
   update(dt: number) {
-    if (this.state !== "playing") return;
+    if(this.state === "countdown"){
+      this.updateCountdown(dt);
+      return;
+    }
+
+    if(this.state !== "playing") return;
 
     const scaleDt = dt * this.timeScale;
 
@@ -183,12 +213,28 @@ export class Game {
     }
   }
 
+private updateCountdown(dt: number){
+    const delta = dt / 1000;
+    this.countdown -= delta;
+    if(this.countdown <= 0){
+      this.state = "playing";
+    }
+  }
+
   getCurrentBeat() {
     return this.beatSource.getBeat();
   }
 
-  getStats() {
-    return this.score;
+  getScoreManager() {
+    return this.scoreManager;
+  }
+
+  getState(){
+    return this.state;
+  }
+
+  getCountdown() {
+    return Math.ceil(this.countdown);
   }
 
   // getActiveNotes() {
@@ -220,7 +266,7 @@ export class Game {
   getHudData(): HudData {
     return {
       combo: this.comboManager.getCurrentCombo,
-      score: this.score.getScore,
+      score: this.scoreManager.getScore,
       lastJudment: this.lastJudment
     };
   }

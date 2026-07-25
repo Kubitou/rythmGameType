@@ -1,33 +1,26 @@
 import { RenderConfig } from "./RenderConfig.js";
 import { Game } from "../engine/Game.js";
 
-type HitFeedback = {
-  text: string;
-  remainingTime: number;
-}
-
 export class Renderer {
   private ctx: CanvasRenderingContext2D;
 
-  private GAME_WIDTH = RenderConfig.GAME_WIDTH;
-  private GAME_HEIGHT = RenderConfig.GAME_HEIGHT;
+  private readonly GAME_WIDTH = RenderConfig.GAME_WIDTH;
+  private readonly GAME_HEIGHT = RenderConfig.GAME_HEIGHT;
+
+  private readonly HIT_X = RenderConfig.HIT_X;
+  private readonly HIT_Y = this.GAME_HEIGHT / 2;
+  private readonly scrollSpeed = RenderConfig.SCROLL_SPEED;
 
   private scaleX = 1;
   private scaleY = 1;
 
-  private HIT_X = RenderConfig.HIT_X;
-  private HIT_Y = this.GAME_HEIGHT / 2;
-
-  private scrollSpeed = RenderConfig.SCROLL_SPEED;
-  private spawnBeatDistance = 0;
-
   private cameraBeat = 0;
-
-  private feedBack: HitFeedback | null = null;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext("2d")!;
+
     this.resize();
+
     window.addEventListener("resize", () => this.resize());
   }
 
@@ -37,116 +30,197 @@ export class Renderer {
 
     this.scaleX = this.canvas.width / this.GAME_WIDTH;
     this.scaleY = this.canvas.height / this.GAME_HEIGHT;
-
-    this.spawnBeatDistance = (this.GAME_WIDTH - this.HIT_X) / this.scrollSpeed;
   }
 
-  private getNoteX(noteBeat: number, currentBeat: number) {
-    return this.HIT_X + (noteBeat - currentBeat) * this.scrollSpeed;
+  private getNoteX(noteBeat: number) {
+    return this.HIT_X + (noteBeat - this.cameraBeat) * this.scrollSpeed;
   }
 
-  public render(game: Game) {
-    this.cameraBeat = game.getCurrentBeat();
+public render(game: Game) {
 
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  this.cameraBeat = game.getCurrentBeat();
 
+  this.clear();
+
+  switch (game.getState()) {
+
+    case "idle":
+      this.drawBackground();
+      // this.drawTitle();
+      break;
+
+    case "countdown":
+      this.drawGameplay(game);
+      this.drawCountdown(game);
+      break;
+
+    case "playing":
+      this.drawGameplay(game);
+      break;
+
+    case "paused":
+      this.drawGameplay(game);
+      this.drawPauseMenu();
+      break;
+
+    case "results":
+      this.drawGameplay(game);
+      this.drawResults(game);
+      break;
+  }
+}
+
+  private drawGameplay(game: Game){
+    this.drawHitLine();
+
+    this.drawNotes(game);
+
+    this.drawHud(game);
+
+    this.drawDebug(game);
+  }
+
+  private drawCountdown(game: Game) {
+    const countdown = game.getCountdown();
     this.ctx.fillStyle = "red";
+    this.ctx.font = "40px Arial";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText(countdown.toString(), this.canvas.width / 2, this.canvas.height / 2);
+  }
+
+  private drawPauseMenu() {
+    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = "red";
+    this.ctx.font = "40px Arial";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText("Paused", this.canvas.width / 2, this.canvas.height / 2);
+  }
+
+  private drawResults(game: Game) {
+    const hud = game.getHudData();
+    this.ctx.fillStyle = "red";
+    this.ctx.font = "40px Arial";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText(`Final Score: ${hud.score}`, this.canvas.width / 2, this.canvas.height / 2);
+    this.ctx.fillText(`Max Combo: ${hud.combo}`, this.canvas.width / 2, this.canvas.height / 2 + 50);
+  }
+
+  private clear() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  private drawBackground() {
+    // depois
+  }
+
+  private drawHitLine() {
+    this.ctx.fillStyle = "red";
+
     this.ctx.fillRect(
       this.HIT_X * this.scaleX,
       this.HIT_Y * this.scaleY - 45 * this.scaleY,
       10 * this.scaleX,
-      90 * this.scaleY,
+      90 * this.scaleY
     );
+  }
 
-    const notes = game.getRenderNotes();
+  private drawNotes(game: Game) {
+    for (const note of game.getRenderNotes()) {
 
-    for (const note of notes) {
       if (note.kind === "roll") {
-        const startX = this.getNoteX(note.startBeat!, this.cameraBeat);
-        const endX = this.getNoteX(note.endBeat!, this.cameraBeat);
-
-        this.ctx.fillStyle = "orange";
-
-        this.ctx.fillRect(
-          startX * this.scaleX,
-          (this.HIT_Y - 10) * this.scaleY,
-          (endX - startX) * this.scaleX,
-          20 * this.scaleY
-        );
-
-        this.ctx.beginPath();
-        this.ctx.arc(
-          startX * this.scaleX,
-          this.HIT_Y * this.scaleY,
-          25 * this.scaleX,
-          0,
-          Math.PI * 2
-        );
-        this.ctx.fill();
+        this.drawRoll(note);
         continue;
       }
-      const noteBeat = note.beat;
 
-      const x = this.getNoteX(noteBeat, this.cameraBeat);
-
-      if (note.action === "DON") {
-        this.ctx.fillStyle = "red";
-      }
-      if (note.action === "KATSU") {
-        this.ctx.fillStyle = "blue";
-      }
-
-      // const delta = Math.abs(noteBeat - this.cameraBeat);
-
-      // if(delta < 0.15){
-      //   this.ctx.fillStyle = "green"; // perfect window
-      // } else if(delta < 0.3){
-      //   this.ctx.fillStyle = "yellow"; // good
-      // } else {
-      //   this.ctx.fillStyle = "blue";
-      // }
-
-      this.ctx.beginPath();
-      this.ctx.arc(
-        x * this.scaleX,
-        this.HIT_Y * this.scaleY,
-        20 * this.scaleX,
-        0,
-        Math.PI * 2
-      );
-      this.ctx.fill();
+      this.drawTap(note);
     }
-    // console.log("ACTIVE NOTES:", (game as any).noteManager.getActiveNotes.length);
-    this.ctx.font = "40px Arial";
-      this.ctx.textAlign = "center";
-
-      const hudData = game.getHudData()
-      this.ctx.fillText(
-        hudData.lastJudment ?? "",
-        this.canvas.width / 2,
-        130
-      );
-
-      this.ctx.fillText(
-        `Combo ${hudData.combo}`,
-        this.canvas.width / 2,
-        190
-      );
-
-      this.ctx.font = "20px Arial";
-      this.ctx.fillText(
-        `Score ${hudData.score}`,
-        this.canvas.width / 2,
-        220
-      );
   }
-  private clear(){}
 
-  private drawBackGround(){}
+  private drawTap(note: ReturnType<Game["getRenderNotes"]>[number]) {
 
-  private drawNotes(){}
+    const x = this.getNoteX(note.beat);
 
-  private drawHud(){}
+    this.ctx.fillStyle =
+      note.action === "DON"
+        ? "red"
+        : "blue";
 
-  private drawDebug(){}
+    this.ctx.beginPath();
+
+    this.ctx.arc(
+      x * this.scaleX,
+      this.HIT_Y * this.scaleY,
+      20 * this.scaleX,
+      0,
+      Math.PI * 2
+    );
+
+    this.ctx.fill();
+  }
+
+  private drawRoll(note: ReturnType<Game["getRenderNotes"]>[number]) {
+
+    const startX = this.getNoteX(note.startBeat!);
+    const endX = this.getNoteX(note.endBeat!);
+
+    this.ctx.fillStyle = "orange";
+
+    this.ctx.fillRect(
+      startX * this.scaleX,
+      (this.HIT_Y - 10) * this.scaleY,
+      (endX - startX) * this.scaleX,
+      20 * this.scaleY
+    );
+
+    this.ctx.beginPath();
+
+    this.ctx.arc(
+      startX * this.scaleX,
+      this.HIT_Y * this.scaleY,
+      25 * this.scaleX,
+      0,
+      Math.PI * 2
+    );
+
+    this.ctx.fill();
+  }
+
+  private drawHud(game: Game) {
+
+    const hud = game.getHudData();
+
+    this.ctx.fillStyle = "Red";
+
+    this.ctx.textAlign = "center";
+
+    this.ctx.font = "40px Arial";
+
+    this.ctx.fillText(
+      hud.lastJudment ?? "",
+      this.canvas.width / 2,
+      130
+    );
+
+    this.ctx.fillText(
+      `Combo ${hud.combo}`,
+      this.canvas.width / 2,
+      190
+    );
+
+    this.ctx.font = "20px Arial";
+
+    this.ctx.fillText(
+      `Score ${hud.score}`,
+      this.canvas.width / 2,
+      220
+    );
+  }
+
+  private drawDebug(game: Game) {
+    // FPS
+    // Beat
+    // Latência
+    // etc.
+  }
 }

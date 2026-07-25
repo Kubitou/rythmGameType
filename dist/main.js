@@ -38,18 +38,28 @@ const audioManager = new AudioManager("./assets/music/alienalien.mp3");
 const beatSource = new AudioBeatSource(audioManager, chart.bpm, chart.offset);
 const clock = new Clock();
 const game = new Game(clock, chart, beatSource);
-const canvas = document.getElementById("gameCanvas");
-const renderer = new Renderer(canvas);
-let started = false;
+const renderer = new Renderer(document.getElementById("gameCanvas"));
 const input = new PlayerInput(game);
+let started = false;
+let musicStarted = false;
 window.addEventListener("keydown", (e) => __awaiter(void 0, void 0, void 0, function* () {
-    if (e.key === " ") {
-        if (started)
-            return;
-        started = true;
-        yield audioManager.play();
-        game.start();
-        console.log("START");
+    switch (e.code) {
+        case "Space":
+            if (!started) {
+                started = true;
+                game.start(); // entra em countdown
+            }
+            break;
+        case "Escape":
+            if (game.getState() === "playing") {
+                game.pause();
+                audioManager.pause();
+            }
+            else if (game.getState() === "paused") {
+                game.resume();
+                yield audioManager.play();
+            }
+            break;
     }
     input.handleKey(e.code);
 }));
@@ -58,11 +68,16 @@ function loop(now) {
     const dt = now - lastTime;
     lastTime = now;
     if (started) {
-        // console.log(
-        //     beatSource.getBeat().toFixed(3),
-        //     audioManager.getCurrentTime().toFixed(3)
-        // );
         game.update(dt);
+        if (!musicStarted &&
+            game.getState() === "playing") {
+            musicStarted = true;
+            audioManager.play();
+        }
+        if (musicStarted &&
+            audioManager.getCurrentTime() >= audioManager.getDuration()) {
+            game.finish();
+        }
     }
     renderer.render(game);
     requestAnimationFrame(loop);
