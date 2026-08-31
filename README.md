@@ -393,7 +393,7 @@ A intenção não é apenas criar um jogo funcional, mas construir uma **pequena
 
 ## 👨‍💻 Autor
 
-**Leonardo Kubo**
+**Kubitou**
 
 Desenvolvedor em formação, interessado em desenvolvimento de software, backend e arquitetura de sistemas.
 
