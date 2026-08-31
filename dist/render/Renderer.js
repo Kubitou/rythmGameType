@@ -29,7 +29,7 @@ export class Renderer {
         switch (game.getState()) {
             case "idle":
                 this.drawBackground();
-                // this.drawTitle();
+                this.drawTitle();
                 break;
             case "countdown":
                 this.drawGameplay(game);
@@ -53,6 +53,15 @@ export class Renderer {
         this.drawNotes(game);
         this.drawHud(game);
         this.drawDebug(game);
+    }
+    drawTitle() {
+        this.ctx.fillStyle = "red";
+        this.ctx.font = "40px Arial";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("Taiko Game", this.canvas.width / 2, this.canvas.height / 2);
+        this.ctx.font = "20px Arial";
+        this.ctx.fillText("Pressione espaço para começar", this.canvas.width / 2, this.canvas.height / 2 + 50);
+        this.ctx.fillText("F = DON (vermelho) | J = Katsu (azul) ", this.canvas.width / 2, this.canvas.height / 2 + 80);
     }
     drawCountdown(game) {
         const countdown = game.getCountdown();
