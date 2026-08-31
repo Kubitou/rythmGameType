@@ -47,6 +47,7 @@ window.addEventListener("keydown", (e) => __awaiter(void 0, void 0, void 0, func
         case "Space":
             if (!started) {
                 started = true;
+                console.log("Game started");
                 game.start(); // entra em countdown
             }
             break;

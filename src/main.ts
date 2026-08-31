@@ -66,6 +66,7 @@ window.addEventListener("keydown", async (e) => {
 
       if (!started) {
         started = true;
+        console.log("Game started");
         game.start();              // entra em countdown
       }
 

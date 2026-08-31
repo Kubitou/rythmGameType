@@ -2,11 +2,13 @@
   "name": "rythmgametype",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "rodar": "echo \"Tomanocu\" && echo \"Não\" && dir && cd src && dir",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "testar": "tsc"
+    "testar": "tsc",
+    "dev" : "tsc --watch",
+    "dockerBuild" : "tsc && docker build -t kubitou/rythmgame:latest . && docker run -it --rm -p 8080:8080 kubitou/rythmgame:latest"
   },
   "keywords": [],
   "author": "",
