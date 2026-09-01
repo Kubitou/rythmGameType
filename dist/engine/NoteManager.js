@@ -76,7 +76,7 @@ export class NoteManager {
                 continue;
             if (note.action !== action)
                 continue;
-            const delta = Math.abs(currentBeat - note.startBeat);
+            const delta = currentBeat - note.startBeat;
             if (Math.abs(delta) <= window) {
                 return note;
             }
@@ -85,6 +85,12 @@ export class NoteManager {
             }
         }
         return null;
+    }
+    resetNoteManager() {
+        this.upcomingNotes = [];
+        this.activeNotes = [];
+        this.expiredNotes = [];
+        this.activeRoll = null;
     }
     get getActiveNotes() {
         return this.activeNotes;

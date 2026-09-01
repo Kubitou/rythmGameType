@@ -30,8 +30,26 @@ export class ScoreManager {
                 break;
         }
     }
+    resetScore() {
+        this.perfect = 0;
+        this.good = 0;
+        this.bad = 0;
+        this.miss = 0;
+        this.rollHits = 0;
+        this.score = 0;
+    }
     get getScore() {
         return this.score;
+    }
+    getStats() {
+        return {
+            score: this.score,
+            perfect: this.perfect,
+            good: this.good,
+            bad: this.bad,
+            miss: this.miss,
+            rollHits: this.rollHits,
+        };
     }
 }
 //# sourceMappingURL=ScoreManager.js.map

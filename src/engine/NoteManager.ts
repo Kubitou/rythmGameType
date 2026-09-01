@@ -19,7 +19,7 @@ export class NoteManager {
   update(currentBeat: number) {
     this.spawn(currentBeat);
     this.collectExpiredNotes(currentBeat);
-    if(this.activeRoll && this.activeRoll.isFinished){
+    if (this.activeRoll && this.activeRoll.isFinished) {
       this.activeRoll = null;
     }
   }
@@ -33,15 +33,15 @@ export class NoteManager {
 
       const spawned = this.upcomingNotes.shift()!;
       this.activeNotes.push(spawned);
-      
-      if(spawned instanceof RollNote){
+
+      if (spawned instanceof RollNote) {
         this.activeRoll = spawned;
       }
     }
   }
 
   private collectExpiredNotes(currentBeat: number) {
-    for(let i = 0; i < this.activeNotes.length;) {
+    for (let i = 0; i < this.activeNotes.length; ) {
       const note = this.activeNotes[i];
       if (!note) break;
 
@@ -66,14 +66,14 @@ export class NoteManager {
     if (index !== -1) {
       this.activeNotes.splice(index, 1);
     }
-    if(note === this.activeRoll){
+    if (note === this.activeRoll) {
       this.activeRoll = null;
     }
   }
 
-  getActiveRoll(): RollNote | null{
-    if(!this.activeRoll) return null;
-    if(this.activeRoll.isFinished) return null;
+  getActiveRoll(): RollNote | null {
+    if (!this.activeRoll) return null;
+    if (this.activeRoll.isFinished) return null;
     return this.activeRoll;
   }
 
@@ -83,27 +83,33 @@ export class NoteManager {
 
   findClosestTap(
     currentBeat: number,
-    action: NoteAction, 
-    window: number): TapNote | null{
-      for(const note of this.activeNotes){
+    action: NoteAction,
+    window: number,
+  ): TapNote | null {
+    for (const note of this.activeNotes) {
+      if (!(note instanceof TapNote)) continue;
 
-        if(!(note instanceof TapNote)) continue;
+      if (note.action !== action) continue;
 
-        if(note.action !== action) continue;
+      const delta = currentBeat - note.startBeat;
 
-        const delta = Math.abs(currentBeat - note.startBeat);
-
-        if(Math.abs(delta) <= window){
-          return note;
-        }
-
-        if(delta < -window){
-          break;
-        }
-
+      if (Math.abs(delta) <= window) {
+        return note;
       }
-   
-      return null;
+
+      if (delta < -window) {
+        break;
+      }
+    }
+
+    return null;
+  }
+
+  resetNoteManager() {
+    this.upcomingNotes = [];
+    this.activeNotes = [];
+    this.expiredNotes = [];
+    this.activeRoll = null;
   }
 
   get getActiveNotes() {

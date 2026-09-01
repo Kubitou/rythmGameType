@@ -9,6 +9,7 @@ export class Judge {
         this.lastNoteId = 0;
     }
     tryHit(currentBeat, action) {
+        const EPSILON = 0.000001;
         const note = this.noteManager.findClosestTap(currentBeat, action, this.badWindow);
         if (!note)
             return null;
@@ -22,19 +23,20 @@ export class Judge {
         if (delta < -this.badWindow)
             return null;
         const abs = Math.abs(delta);
-        if (abs <= this.perfectWindow) {
+        console.log("delta:", delta, "abs:", abs);
+        if (abs <= this.perfectWindow + EPSILON) {
             note.markJudged();
             this.lastNoteId = note.id;
             this.noteManager.remove(note);
             return "perfect";
         }
-        if (abs <= this.goodWindow) {
+        if (abs <= this.goodWindow + EPSILON) {
             note.markJudged();
             this.lastNoteId = note.id;
             this.noteManager.remove(note);
             return "good";
         }
-        if (abs <= this.badWindow) {
+        if (abs <= this.badWindow + EPSILON) {
             note.markJudged();
             this.lastNoteId = note.id;
             this.noteManager.remove(note);
@@ -44,6 +46,10 @@ export class Judge {
         this.lastNoteId = note.id;
         this.noteManager.remove(note);
         return "miss";
+    }
+    resetJudge() {
+        this.lastInputBeat = -Infinity;
+        this.lastNoteId = 0;
     }
     get lastHitNoteId() {
         return this.lastNoteId;

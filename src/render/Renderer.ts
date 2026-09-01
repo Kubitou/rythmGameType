@@ -36,41 +36,38 @@ export class Renderer {
     return this.HIT_X + (noteBeat - this.cameraBeat) * this.scrollSpeed;
   }
 
-public render(game: Game) {
+  public render(game: Game) {
+    this.cameraBeat = game.getCurrentBeat();
 
-  this.cameraBeat = game.getCurrentBeat();
+    this.clear();
 
-  this.clear();
+    switch (game.getState()) {
+      case "idle":
+        this.drawBackground();
+        this.drawTitle();
+        break;
 
-  switch (game.getState()) {
+      case "countdown":
+        this.drawGameplay(game);
+        this.drawCountdown(game);
+        break;
 
-    case "idle":
-      this.drawBackground();
-      this.drawTitle();
-      break;
+      case "playing":
+        this.drawGameplay(game);
+        break;
 
-    case "countdown":
-      this.drawGameplay(game);
-      this.drawCountdown(game);
-      break;
+      case "paused":
+        this.drawGameplay(game);
+        this.drawPauseMenu();
+        break;
 
-    case "playing":
-      this.drawGameplay(game);
-      break;
-
-    case "paused":
-      this.drawGameplay(game);
-      this.drawPauseMenu();
-      break;
-
-    case "results":
-      this.drawGameplay(game);
-      this.drawResults(game);
-      break;
+      case "results":
+        this.drawResults(game);
+        break;
+    }
   }
-}
 
-  private drawGameplay(game: Game){
+  private drawGameplay(game: Game) {
     this.drawHitLine();
 
     this.drawNotes(game);
@@ -84,10 +81,22 @@ public render(game: Game) {
     this.ctx.fillStyle = "red";
     this.ctx.font = "40px Arial";
     this.ctx.textAlign = "center";
-    this.ctx.fillText("Taiko Game", this.canvas.width / 2, this.canvas.height / 2);
+    this.ctx.fillText(
+      "Taiko Game",
+      this.canvas.width / 2,
+      this.canvas.height / 2,
+    );
     this.ctx.font = "20px Arial";
-    this.ctx.fillText("Pressione espaço para começar", this.canvas.width / 2, this.canvas.height / 2 + 50);
-    this.ctx.fillText("F = DON (vermelho) | J = Katsu (azul) ", this.canvas.width / 2, this.canvas.height / 2 + 80);
+    this.ctx.fillText(
+      "Pressione espaço para começar",
+      this.canvas.width / 2,
+      this.canvas.height / 2 + 50,
+    );
+    this.ctx.fillText(
+      "F = DON (vermelho) | J = Katsu (azul) ",
+      this.canvas.width / 2,
+      this.canvas.height / 2 + 80,
+    );
   }
 
   private drawCountdown(game: Game) {
@@ -95,7 +104,11 @@ public render(game: Game) {
     this.ctx.fillStyle = "red";
     this.ctx.font = "40px Arial";
     this.ctx.textAlign = "center";
-    this.ctx.fillText(countdown.toString(), this.canvas.width / 2, this.canvas.height / 2);
+    this.ctx.fillText(
+      countdown.toString(),
+      this.canvas.width / 2,
+      this.canvas.height / 2,
+    );
   }
 
   private drawPauseMenu() {
@@ -108,12 +121,42 @@ public render(game: Game) {
   }
 
   private drawResults(game: Game) {
-    const hud = game.getHudData();
+    this.clear();
+    const results = game.getResultsData();
+
     this.ctx.fillStyle = "red";
-    this.ctx.font = "40px Arial";
     this.ctx.textAlign = "center";
-    this.ctx.fillText(`Final Score: ${hud.score}`, this.canvas.width / 2, this.canvas.height / 2);
-    this.ctx.fillText(`Max Combo: ${hud.combo}`, this.canvas.width / 2, this.canvas.height / 2 + 50);
+
+    this.ctx.font = "50px Arial";
+    this.ctx.fillText("RESULTS", this.canvas.width / 2, 100);
+
+    this.ctx.font = "25px Arial";
+
+    this.ctx.fillText(`Score: ${results.score}`, this.canvas.width / 2, 160);
+
+    this.ctx.fillText(
+      `Perfect: ${results.perfect}`,
+      this.canvas.width / 2,
+      210,
+    );
+
+    this.ctx.fillText(`Good: ${results.good}`, this.canvas.width / 2, 250);
+
+    this.ctx.fillText(`Bad: ${results.bad}`, this.canvas.width / 2, 290);
+
+    this.ctx.fillText(`Miss: ${results.miss}`, this.canvas.width / 2, 330);
+
+    this.ctx.fillText(
+      `Roll Hits: ${results.rollHits}`,
+      this.canvas.width / 2,
+      370,
+    );
+
+    this.ctx.fillText(
+      `Max Combo: ${results.maxCombo}`,
+      this.canvas.width / 2,
+      420,
+    );
   }
 
   private clear() {
@@ -131,13 +174,12 @@ public render(game: Game) {
       this.HIT_X * this.scaleX,
       this.HIT_Y * this.scaleY - 45 * this.scaleY,
       10 * this.scaleX,
-      90 * this.scaleY
+      90 * this.scaleY,
     );
   }
 
   private drawNotes(game: Game) {
     for (const note of game.getRenderNotes()) {
-
       if (note.kind === "roll") {
         this.drawRoll(note);
         continue;
@@ -148,13 +190,9 @@ public render(game: Game) {
   }
 
   private drawTap(note: ReturnType<Game["getRenderNotes"]>[number]) {
-
     const x = this.getNoteX(note.beat);
 
-    this.ctx.fillStyle =
-      note.action === "DON"
-        ? "red"
-        : "blue";
+    this.ctx.fillStyle = note.action === "DON" ? "red" : "blue";
 
     this.ctx.beginPath();
 
@@ -163,14 +201,13 @@ public render(game: Game) {
       this.HIT_Y * this.scaleY,
       20 * this.scaleX,
       0,
-      Math.PI * 2
+      Math.PI * 2,
     );
 
     this.ctx.fill();
   }
 
   private drawRoll(note: ReturnType<Game["getRenderNotes"]>[number]) {
-
     const startX = this.getNoteX(note.startBeat!);
     const endX = this.getNoteX(note.endBeat!);
 
@@ -180,7 +217,7 @@ public render(game: Game) {
       startX * this.scaleX,
       (this.HIT_Y - 10) * this.scaleY,
       (endX - startX) * this.scaleX,
-      20 * this.scaleY
+      20 * this.scaleY,
     );
 
     this.ctx.beginPath();
@@ -190,14 +227,13 @@ public render(game: Game) {
       this.HIT_Y * this.scaleY,
       25 * this.scaleX,
       0,
-      Math.PI * 2
+      Math.PI * 2,
     );
 
     this.ctx.fill();
   }
 
   private drawHud(game: Game) {
-
     const hud = game.getHudData();
 
     this.ctx.fillStyle = "Red";
@@ -206,25 +242,13 @@ public render(game: Game) {
 
     this.ctx.font = "40px Arial";
 
-    this.ctx.fillText(
-      hud.lastJudment ?? "",
-      this.canvas.width / 2,
-      130
-    );
+    this.ctx.fillText(hud.lastJudment ?? "", this.canvas.width / 2, 130);
 
-    this.ctx.fillText(
-      `Combo ${hud.combo}`,
-      this.canvas.width / 2,
-      190
-    );
+    this.ctx.fillText(`Combo ${hud.combo}`, this.canvas.width / 2, 190);
 
     this.ctx.font = "20px Arial";
 
-    this.ctx.fillText(
-      `Score ${hud.score}`,
-      this.canvas.width / 2,
-      220
-    );
+    this.ctx.fillText(`Score ${hud.score}`, this.canvas.width / 2, 220);
   }
 
   private drawDebug(game: Game) {

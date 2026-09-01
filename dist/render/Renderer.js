@@ -43,7 +43,6 @@ export class Renderer {
                 this.drawPauseMenu();
                 break;
             case "results":
-                this.drawGameplay(game);
                 this.drawResults(game);
                 break;
         }
@@ -79,12 +78,20 @@ export class Renderer {
         this.ctx.fillText("Paused", this.canvas.width / 2, this.canvas.height / 2);
     }
     drawResults(game) {
-        const hud = game.getHudData();
+        this.clear();
+        const results = game.getResultsData();
         this.ctx.fillStyle = "red";
-        this.ctx.font = "40px Arial";
         this.ctx.textAlign = "center";
-        this.ctx.fillText(`Final Score: ${hud.score}`, this.canvas.width / 2, this.canvas.height / 2);
-        this.ctx.fillText(`Max Combo: ${hud.combo}`, this.canvas.width / 2, this.canvas.height / 2 + 50);
+        this.ctx.font = "50px Arial";
+        this.ctx.fillText("RESULTS", this.canvas.width / 2, 100);
+        this.ctx.font = "25px Arial";
+        this.ctx.fillText(`Score: ${results.score}`, this.canvas.width / 2, 160);
+        this.ctx.fillText(`Perfect: ${results.perfect}`, this.canvas.width / 2, 210);
+        this.ctx.fillText(`Good: ${results.good}`, this.canvas.width / 2, 250);
+        this.ctx.fillText(`Bad: ${results.bad}`, this.canvas.width / 2, 290);
+        this.ctx.fillText(`Miss: ${results.miss}`, this.canvas.width / 2, 330);
+        this.ctx.fillText(`Roll Hits: ${results.rollHits}`, this.canvas.width / 2, 370);
+        this.ctx.fillText(`Max Combo: ${results.maxCombo}`, this.canvas.width / 2, 420);
     }
     clear() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -107,10 +114,7 @@ export class Renderer {
     }
     drawTap(note) {
         const x = this.getNoteX(note.beat);
-        this.ctx.fillStyle =
-            note.action === "DON"
-                ? "red"
-                : "blue";
+        this.ctx.fillStyle = note.action === "DON" ? "red" : "blue";
         this.ctx.beginPath();
         this.ctx.arc(x * this.scaleX, this.HIT_Y * this.scaleY, 20 * this.scaleX, 0, Math.PI * 2);
         this.ctx.fill();

@@ -45,10 +45,13 @@ let musicStarted = false;
 window.addEventListener("keydown", (e) => __awaiter(void 0, void 0, void 0, function* () {
     switch (e.code) {
         case "Space":
+            if (game.getState() === "results") {
+                resetGame();
+                return;
+            }
             if (!started) {
                 started = true;
-                console.log("Game started");
-                game.start(); // entra em countdown
+                game.start();
             }
             break;
         case "Escape":
@@ -64,12 +67,36 @@ window.addEventListener("keydown", (e) => __awaiter(void 0, void 0, void 0, func
     }
     input.handleKey(e.code);
 }));
+const TEST_BEAT = 11;
+const TEST_ACTION = "KATSU";
+let botTested = false;
+function testJudge(game) {
+    if (botTested)
+        return;
+    const currentBeat = game.getCurrentBeat();
+    if (currentBeat >= TEST_BEAT + 0.08) {
+        const result = game.handleInput(TEST_ACTION);
+        console.log("=== JUDGE TEST ===");
+        console.log("Nota:", TEST_BEAT);
+        console.log("Beat atual:", currentBeat);
+        console.log("Diferença:", currentBeat - TEST_BEAT);
+        console.log("Resultado:", result);
+        botTested = true;
+    }
+}
+function resetGame() {
+    game.resetGame();
+    audioManager.resetAudio();
+    started = false;
+    musicStarted = false;
+}
 let lastTime = performance.now();
 function loop(now) {
     const dt = now - lastTime;
     lastTime = now;
     if (started) {
         game.update(dt);
+        testJudge(game);
         if (!musicStarted &&
             game.getState() === "playing") {
             musicStarted = true;

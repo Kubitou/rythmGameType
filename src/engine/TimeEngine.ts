@@ -41,6 +41,13 @@ export class TimeEngine implements BeatSource{
         return (time - this.startTime) * (this.bpm / 60000);
     }
 
+    resetTime(){
+        this.startTime = this.clock.time;
+        this.lastRealTime = this.startTime;
+        this.musicalBeat = 0;
+        this.lastBeatIndex = -1;
+    }
+
     get preciseBeat(){
         return this.musicalBeat;
     }

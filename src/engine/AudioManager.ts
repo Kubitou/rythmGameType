@@ -15,6 +15,10 @@ export class AudioManager{
         this.audio.pause();
     }
 
+    resetAudio(){
+        this.audio.currentTime = 0;
+    }
+
     getCurrentTime(){
         return this.audio.currentTime;
     }

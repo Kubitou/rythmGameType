@@ -140,13 +140,13 @@ export class Game {
         return this.state;
     }
     getCountdown() {
-        return Math.ceil(this.countdown);
+        return Math.max(0, Math.ceil(this.countdown));
     }
     // getActiveNotes() {
     //   return this.noteManager.getActiveNotes;
     // }
     getRenderNotes() {
-        return this.noteManager.getActiveNotes.map(note => {
+        return this.noteManager.getActiveNotes.map((note) => {
             if (note instanceof RollNote) {
                 return {
                     id: note.id,
@@ -169,8 +169,32 @@ export class Game {
         return {
             combo: this.comboManager.getCurrentCombo,
             score: this.scoreManager.getScore,
-            lastJudment: this.lastJudment
+            lastJudment: this.lastJudment,
         };
+    }
+    getResultsData() {
+        const score = this.scoreManager.getStats();
+        return {
+            score: score.score,
+            perfect: score.perfect,
+            good: score.good,
+            bad: score.bad,
+            miss: score.miss,
+            rollHits: score.rollHits,
+            maxCombo: this.comboManager.getMaxCombo,
+        };
+    }
+    isPlaying() {
+        return this.state === "playing";
+    }
+    resetGame() {
+        this.state = "idle";
+        this.lastJudment = null;
+        this.judge.resetJudge();
+        this.timeEngine.resetTime();
+        this.comboManager.resetCombo();
+        this.scoreManager = new ScoreManager();
+        this.noteManager.resetNoteManager();
     }
 }
 //# sourceMappingURL=Game.js.map

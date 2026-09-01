@@ -9,14 +9,9 @@ import { HitEvent } from "../core/HitEvent.js";
 import { BeatSource } from "./BeatSource.js";
 import { RenderConfig } from "../render/RenderConfig.js";
 import { GameplayConfig } from "../core/GameplayConfig.js";
-import { ScoreManager } from "./ScoreManager.js"
+import { ScoreManager } from "./ScoreManager.js";
 
-type GameState =
-  | "idle"
-  | "countdown"
-  | "playing"
-  | "paused"
-  | "results";
+type GameState = "idle" | "countdown" | "playing" | "paused" | "results";
 
 type RenderNote = {
   id: number;
@@ -27,13 +22,23 @@ type RenderNote = {
 
   startBeat?: number;
   endBeat?: number;
-}
+};
 
 type HudData = {
   combo: number;
   score: number;
   lastJudment: HitEvent["type"] | null;
-}
+};
+
+type ResultsData = {
+  score: number;
+  perfect: number;
+  good: number;
+  bad: number;
+  miss: number;
+  rollHits: number;
+  maxCombo: number;
+};
 
 //type TimingMode = | "engine" | "audio";
 
@@ -74,16 +79,14 @@ export class Game {
         break;
 
       case "roll-hit":
-
         break;
     }
   }
 
-
   constructor(
     private clock: Clock,
     private chart: Chart,
-    beatSource?: BeatSource
+    beatSource?: BeatSource,
   ) {
     this.timeEngine = new TimeEngine(clock, chart.bpm);
     this.beatSource = beatSource ?? this.timeEngine;
@@ -103,7 +106,7 @@ export class Game {
   }
 
   start() {
-    if(this.state !== "idle") return;
+    if (this.state !== "idle") return;
 
     this.loadChart();
 
@@ -112,14 +115,14 @@ export class Game {
     this.countdown = 3;
   }
 
-  pause(){
-    if(this.state !== "playing") return;
+  pause() {
+    if (this.state !== "playing") return;
 
     this.state = "paused";
   }
 
-  resume(){
-    if(this.state !== "paused") return;
+  resume() {
+    if (this.state !== "paused") return;
 
     this.state = "playing";
   }
@@ -145,8 +148,7 @@ export class Game {
 
     const result = this.judge.tryHit(currentBeat, action);
 
-    if (result)
-      this.registerHit(result, this.judge.lastHitNoteId);
+    if (result) this.registerHit(result, this.judge.lastHitNoteId);
 
     return result;
   }
@@ -173,16 +175,15 @@ export class Game {
       );
     }
     this.noteManager.load(notes);
-    
   }
 
   update(dt: number) {
-    if(this.state === "countdown"){
+    if (this.state === "countdown") {
       this.updateCountdown(dt);
       return;
     }
 
-    if(this.state !== "playing") return;
+    if (this.state !== "playing") return;
 
     const scaleDt = dt * this.timeScale;
 
@@ -213,10 +214,10 @@ export class Game {
     }
   }
 
-private updateCountdown(dt: number){
+  private updateCountdown(dt: number) {
     const delta = dt / 1000;
     this.countdown -= delta;
-    if(this.countdown <= 0){
+    if (this.countdown <= 0) {
       this.state = "playing";
     }
   }
@@ -229,12 +230,12 @@ private updateCountdown(dt: number){
     return this.scoreManager;
   }
 
-  getState(){
+  getState() {
     return this.state;
   }
 
-  getCountdown() {
-    return Math.ceil(this.countdown);
+  getCountdown(): number {
+    return Math.max(0, Math.ceil(this.countdown));
   }
 
   // getActiveNotes() {
@@ -242,7 +243,7 @@ private updateCountdown(dt: number){
   // }
 
   getRenderNotes(): RenderNote[] {
-    return this.noteManager.getActiveNotes.map(note => {
+    return this.noteManager.getActiveNotes.map((note) => {
       if (note instanceof RollNote) {
         return {
           id: note.id,
@@ -267,7 +268,37 @@ private updateCountdown(dt: number){
     return {
       combo: this.comboManager.getCurrentCombo,
       score: this.scoreManager.getScore,
-      lastJudment: this.lastJudment
+      lastJudment: this.lastJudment,
     };
+  }
+
+  getResultsData(): ResultsData {
+    const score = this.scoreManager.getStats();
+
+    return {
+      score: score.score,
+      perfect: score.perfect,
+      good: score.good,
+      bad: score.bad,
+      miss: score.miss,
+      rollHits: score.rollHits,
+      maxCombo: this.comboManager.getMaxCombo,
+    };
+  }
+
+  isPlaying() {
+    return this.state === "playing";
+  }
+
+  resetGame(){
+    this.state = "idle";
+    this.lastJudment = null;
+
+    this.judge.resetJudge();
+    this.timeEngine.resetTime();
+
+    this.comboManager.resetCombo();
+    this.scoreManager = new ScoreManager();
+    this.noteManager.resetNoteManager();
   }
 }

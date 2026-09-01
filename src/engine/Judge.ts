@@ -3,65 +3,77 @@ import { NoteManager } from "./NoteManager.js";
 
 type Judgment = "perfect" | "good" | "bad" | "miss" | null;
 
-export class Judge{
-    constructor(
-        private noteManager: NoteManager,
-        private perfectWindow: number,
-        private goodWindow: number,
-        private badWindow: number,
-    ){}
+export class Judge {
+  constructor(
+    private noteManager: NoteManager,
+    private perfectWindow: number,
+    private goodWindow: number,
+    private badWindow: number,
+  ) {}
 
-    private lastInputBeat = -Infinity
-    private inputCooldown = 0.05;
-    private lastNoteId = 0;
+  private lastInputBeat = -Infinity;
+  private inputCooldown = 0.05;
+  private lastNoteId = 0;
 
-    tryHit(currentBeat: number, action: NoteAction): Judgment{
-        const note = this.noteManager.findClosestTap(currentBeat, action, this.badWindow);
-        
-        if(!note) return null;
+  tryHit(currentBeat: number, action: NoteAction): Judgment {
+    const EPSILON = 0.000001;
 
-        if(note.action !== action) return null;
+    const note = this.noteManager.findClosestTap(
+      currentBeat,
+      action,
+      this.badWindow,
+    );
 
-        if(currentBeat - this.lastInputBeat < this.inputCooldown) return null;
-       
-        // console.log("JUDGING NOTE:", note.id, note.startBeat);
-        this.lastInputBeat = currentBeat;
+    if (!note) return null;
 
-        const delta = currentBeat - note.hitBeat;
+    if (note.action !== action) return null;
 
-        if(delta < -this.badWindow) return null;
+    if (currentBeat - this.lastInputBeat < this.inputCooldown) return null;
 
-        const abs = Math.abs(delta);
+    // console.log("JUDGING NOTE:", note.id, note.startBeat);
+    this.lastInputBeat = currentBeat;
 
-        if(abs <= this.perfectWindow){
-            note.markJudged();
-            this.lastNoteId = note.id;
-            this.noteManager.remove(note);
-            return "perfect";
-        }
+    const delta = currentBeat - note.hitBeat;
 
-        if(abs<= this.goodWindow){
-            note.markJudged();
-            this.lastNoteId = note.id;
-            this.noteManager.remove(note);
-            return "good";
-        }
+    if (delta < -this.badWindow) return null;
 
-        if(abs <= this.badWindow){
-            note.markJudged();
-            this.lastNoteId = note.id;
-            this.noteManager.remove(note);
-            return "bad";
-        }
+    const abs = Math.abs(delta);
 
-        note.markJudged();
-        this.lastNoteId = note.id;
-        this.noteManager.remove(note);
-        return "miss";
+    console.log("delta:", delta, "abs:", abs);
+
+    if (abs <= this.perfectWindow + EPSILON) {
+      note.markJudged();
+      this.lastNoteId = note.id;
+      this.noteManager.remove(note);
+      return "perfect";
     }
 
-    get lastHitNoteId(){
-        return this.lastNoteId;
+    if (abs <= this.goodWindow + EPSILON) {
+      note.markJudged();
+      this.lastNoteId = note.id;
+      this.noteManager.remove(note);
+      return "good";
     }
 
+    if (abs <= this.badWindow + EPSILON) {
+      note.markJudged();
+      this.lastNoteId = note.id;
+      this.noteManager.remove(note);
+      return "bad";
+    }
+
+    note.markJudged();
+    this.lastNoteId = note.id;
+    this.noteManager.remove(note);
+    return "miss";
+  }
+
+  resetJudge() {
+    this.lastInputBeat = -Infinity;
+    this.lastNoteId = 0;
+  }
+
+  get lastHitNoteId() {
+    return this.lastNoteId;
+  }
 }
