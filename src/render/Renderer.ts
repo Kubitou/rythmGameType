@@ -132,7 +132,9 @@ export class Renderer {
 
     this.ctx.font = "25px Arial";
 
-    this.ctx.fillText(`Score: ${results.score}`, this.canvas.width / 2, 160);
+    this.ctx.fillText(`Rank: ${game.getRank()}`, this.canvas.width / 2, 140);
+
+    this.ctx.fillText(`Score: ${results.score}`, this.canvas.width / 2, 175);
 
     this.ctx.fillText(
       `Perfect: ${results.perfect}`,
@@ -191,6 +193,7 @@ export class Renderer {
 
   private drawTap(note: ReturnType<Game["getRenderNotes"]>[number]) {
     const x = this.getNoteX(note.beat);
+    const size = note.size === "big" ? 40 : 30;
 
     this.ctx.fillStyle = note.action === "DON" ? "red" : "blue";
 
@@ -199,7 +202,7 @@ export class Renderer {
     this.ctx.arc(
       x * this.scaleX,
       this.HIT_Y * this.scaleY,
-      20 * this.scaleX,
+      size * this.scaleX,
       0,
       Math.PI * 2,
     );
@@ -225,7 +228,7 @@ export class Renderer {
     this.ctx.arc(
       startX * this.scaleX,
       this.HIT_Y * this.scaleY,
-      25 * this.scaleX,
+      40 * this.scaleX,
       0,
       Math.PI * 2,
     );
@@ -242,13 +245,15 @@ export class Renderer {
 
     this.ctx.font = "40px Arial";
 
-    this.ctx.fillText(hud.lastJudment ?? "", this.canvas.width / 2, 130);
+    this.ctx.fillText(hud.lastJudgment ?? "", this.canvas.width / 2, 130);
 
     this.ctx.fillText(`Combo ${hud.combo}`, this.canvas.width / 2, 190);
 
     this.ctx.font = "20px Arial";
 
     this.ctx.fillText(`Score ${hud.score}`, this.canvas.width / 2, 220);
+
+    this.ctx.fillText(`X${hud.multiplier}`, this.canvas.width / 2 + 55 + hud.score.toString().length * 10, 220);
   }
 
   private drawDebug(game: Game) {

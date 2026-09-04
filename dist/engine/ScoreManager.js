@@ -1,5 +1,6 @@
 export class ScoreManager {
-    constructor() {
+    constructor(comboManager) {
+        this.comboManager = comboManager;
         this.perfect = 0;
         this.good = 0;
         this.bad = 0;
@@ -8,26 +9,42 @@ export class ScoreManager {
         this.score = 0;
     }
     register(event) {
+        let multiplier = this.multiplier();
         switch (event.type) {
             case "perfect":
                 this.perfect++;
-                this.score += 300;
+                this.score += 300 * multiplier;
                 break;
             case "good":
                 this.good++;
-                this.score += 100;
+                this.score += 100 * multiplier;
                 break;
             case "bad":
                 this.bad++;
-                this.score += 10;
+                this.score += 10 * multiplier;
                 break;
             case "miss":
                 this.miss++;
                 break;
             case "roll-hit":
                 this.rollHits++;
-                this.score += 10;
+                this.score += 10 * multiplier;
                 break;
+        }
+    }
+    multiplier() {
+        let combo = this.comboManager.getCurrentCombo;
+        if (combo >= 30) {
+            return 4;
+        }
+        else if (combo >= 20) {
+            return 3;
+        }
+        else if (combo >= 10) {
+            return 2;
+        }
+        else {
+            return 1;
         }
     }
     resetScore() {

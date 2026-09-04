@@ -11,9 +11,12 @@ export class ComboManager{
     }
 
     resetCombo(){
-    if (this.combo > 0) {
-    }
         this.combo = 0;
+    }
+
+    resetAll(){
+        this.combo = 0;
+        this.maxCombo = 0;
     }
 
     get getCurrentCombo(){

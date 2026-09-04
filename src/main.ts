@@ -11,9 +11,9 @@ const chart: Chart = {
   offset: 6.56,
 
   notes: [
-    { beat: 0, action: "DON", size: "small" },
-    { beat: 0.70, action: "DON", size: "small" },
-    { beat: 1.40, action: "DON", size: "small" },
+    { beat: 0, action: "DON", size: "big" },
+    { beat: 0.70, action: "DON", size: "big" },
+    { beat: 1.40, action: "DON", size: "big" },
     { beat: 2.10, action: "DON", size: "small" },
     { beat: 2.80, action: "DON", size: "small" },
     { beat: 3.50, action: "DON", size: "small" },
@@ -28,6 +28,10 @@ const chart: Chart = {
 
     { beat: 11, action: "KATSU", size: "small" },
     { beat: 13, action: "DON", size: "small" },
+    { beat: 14, action: "DON", size: "small" },
+    { beat: 15, action: "DON", size: "small" },
+    { beat: 16, action: "DON", size: "small" },
+    { beat: 17, action: "DON", size: "small" },
   ],
 };
 
@@ -87,33 +91,14 @@ window.addEventListener("keydown", async (e) => {
       }
 
       break;
+    
+    case "Digit4":
+      game.finish();
+      break;
   }
 
   input.handleKey(e.code);
 });
-
-const TEST_BEAT = 11;
-const TEST_ACTION = "KATSU";
-
-let botTested = false;
-
-function testJudge(game: Game) {
-    if (botTested) return;
-
-    const currentBeat = game.getCurrentBeat();
-
-    if (currentBeat >= TEST_BEAT + 0.08) {
-        const result = game.handleInput(TEST_ACTION);
-
-        console.log("=== JUDGE TEST ===");
-        console.log("Nota:", TEST_BEAT);
-        console.log("Beat atual:", currentBeat);
-        console.log("Diferença:", currentBeat - TEST_BEAT);
-        console.log("Resultado:", result);
-
-        botTested = true;
-    }
-}
 
 function resetGame() {
   game.resetGame();
@@ -133,8 +118,6 @@ function loop(now: number) {
   if (started) {
 
     game.update(dt);
-
-    testJudge(game);
 
     if (
       !musicStarted &&

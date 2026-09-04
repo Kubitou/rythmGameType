@@ -85,7 +85,8 @@ export class Renderer {
         this.ctx.font = "50px Arial";
         this.ctx.fillText("RESULTS", this.canvas.width / 2, 100);
         this.ctx.font = "25px Arial";
-        this.ctx.fillText(`Score: ${results.score}`, this.canvas.width / 2, 160);
+        this.ctx.fillText(`Rank: ${game.getRank()}`, this.canvas.width / 2, 140);
+        this.ctx.fillText(`Score: ${results.score}`, this.canvas.width / 2, 175);
         this.ctx.fillText(`Perfect: ${results.perfect}`, this.canvas.width / 2, 210);
         this.ctx.fillText(`Good: ${results.good}`, this.canvas.width / 2, 250);
         this.ctx.fillText(`Bad: ${results.bad}`, this.canvas.width / 2, 290);
@@ -114,9 +115,10 @@ export class Renderer {
     }
     drawTap(note) {
         const x = this.getNoteX(note.beat);
+        const size = note.size === "big" ? 40 : 30;
         this.ctx.fillStyle = note.action === "DON" ? "red" : "blue";
         this.ctx.beginPath();
-        this.ctx.arc(x * this.scaleX, this.HIT_Y * this.scaleY, 20 * this.scaleX, 0, Math.PI * 2);
+        this.ctx.arc(x * this.scaleX, this.HIT_Y * this.scaleY, size * this.scaleX, 0, Math.PI * 2);
         this.ctx.fill();
     }
     drawRoll(note) {
@@ -125,7 +127,7 @@ export class Renderer {
         this.ctx.fillStyle = "orange";
         this.ctx.fillRect(startX * this.scaleX, (this.HIT_Y - 10) * this.scaleY, (endX - startX) * this.scaleX, 20 * this.scaleY);
         this.ctx.beginPath();
-        this.ctx.arc(startX * this.scaleX, this.HIT_Y * this.scaleY, 25 * this.scaleX, 0, Math.PI * 2);
+        this.ctx.arc(startX * this.scaleX, this.HIT_Y * this.scaleY, 40 * this.scaleX, 0, Math.PI * 2);
         this.ctx.fill();
     }
     drawHud(game) {
@@ -134,10 +136,11 @@ export class Renderer {
         this.ctx.fillStyle = "Red";
         this.ctx.textAlign = "center";
         this.ctx.font = "40px Arial";
-        this.ctx.fillText((_a = hud.lastJudment) !== null && _a !== void 0 ? _a : "", this.canvas.width / 2, 130);
+        this.ctx.fillText((_a = hud.lastJudgment) !== null && _a !== void 0 ? _a : "", this.canvas.width / 2, 130);
         this.ctx.fillText(`Combo ${hud.combo}`, this.canvas.width / 2, 190);
         this.ctx.font = "20px Arial";
         this.ctx.fillText(`Score ${hud.score}`, this.canvas.width / 2, 220);
+        this.ctx.fillText(`X${hud.multiplier}`, this.canvas.width / 2 + 55 + hud.score.toString().length * 10, 220);
     }
     drawDebug(game) {
         // FPS

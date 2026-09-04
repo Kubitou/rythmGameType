@@ -1,4 +1,5 @@
 import { HitEvent } from "../core/HitEvent.js";
+import { ComboManager } from "./ComboManager.js";
 
 export type ScoreData = {
   score: number;
@@ -18,21 +19,24 @@ export class ScoreManager {
 
   private score = 0;
 
+  constructor(private comboManager: ComboManager) {}
+
   register(event: HitEvent) {
+    let multiplier = this.multiplier();
     switch (event.type) {
       case "perfect":
         this.perfect++;
-        this.score += 300;
+        this.score += 300 * multiplier;
         break;
 
       case "good":
         this.good++;
-        this.score += 100;
+        this.score += 100 * multiplier;
         break;
 
       case "bad":
         this.bad++;
-        this.score += 10;
+        this.score += 10 * multiplier;
         break;
 
       case "miss":
@@ -41,8 +45,21 @@ export class ScoreManager {
 
       case "roll-hit":
         this.rollHits++;
-        this.score += 10;
+        this.score += 10 * multiplier;
         break;
+    }
+  }
+
+  multiplier(){
+    let combo = this.comboManager.getCurrentCombo;
+    if(combo >= 30){
+      return 4;
+    }else if(combo >= 20){
+      return 3;
+    }else if(combo >= 10){
+      return 2;
+    }else{
+      return 1;
     }
   }
 

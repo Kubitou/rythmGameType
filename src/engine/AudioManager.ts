@@ -1,5 +1,3 @@
-import { BeatSource } from "./BeatSource";
-
 export class AudioManager{
     private audio: HTMLAudioElement;
 

@@ -23,7 +23,6 @@ export class Judge {
         if (delta < -this.badWindow)
             return null;
         const abs = Math.abs(delta);
-        console.log("delta:", delta, "abs:", abs);
         if (abs <= this.perfectWindow + EPSILON) {
             note.markJudged();
             this.lastNoteId = note.id;

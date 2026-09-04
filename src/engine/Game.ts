@@ -17,7 +17,7 @@ type RenderNote = {
   id: number;
   beat: number;
   action: "DON" | "KATSU";
-  //size: "small" | "big";
+  size: "small" | "big";
   kind: "tap" | "roll";
 
   startBeat?: number;
@@ -27,7 +27,8 @@ type RenderNote = {
 type HudData = {
   combo: number;
   score: number;
-  lastJudment: HitEvent["type"] | null;
+  multiplier: number;
+  lastJudgment: HitEvent["type"] | null;
 };
 
 type ResultsData = {
@@ -60,12 +61,10 @@ export class Game {
 
   private state: GameState = "idle";
 
-  private lastJudment: HitEvent["type"] | null = null;
+  private lastJudgment: HitEvent["type"] | null = null;
 
   private registerHit(type: HitEvent["type"], noteId: number) {
-    this.lastJudment = type;
-
-    this.scoreManager.register({ type, noteId });
+    this.lastJudgment = type;
 
     switch (type) {
       case "perfect":
@@ -81,6 +80,8 @@ export class Game {
       case "roll-hit":
         break;
     }
+
+     this.scoreManager.register({ type, noteId });
   }
 
   constructor(
@@ -98,7 +99,7 @@ export class Game {
 
     this.judge = new Judge(this.noteManager, 0.05, 0.1, 0.2);
     this.comboManager = new ComboManager();
-    this.scoreManager = new ScoreManager();
+    this.scoreManager = new ScoreManager(this.comboManager);
   }
 
   setTimeScale(scale: number) {
@@ -252,6 +253,7 @@ export class Game {
           kind: "roll",
           startBeat: note.startBeat,
           endBeat: note.endBeat,
+          size: note.size,
         };
       }
 
@@ -260,6 +262,7 @@ export class Game {
         action: note.action,
         kind: "tap",
         beat: note.startBeat,
+        size: note.size,
       };
     });
   }
@@ -268,7 +271,8 @@ export class Game {
     return {
       combo: this.comboManager.getCurrentCombo,
       score: this.scoreManager.getScore,
-      lastJudment: this.lastJudment,
+      multiplier: this.scoreManager.multiplier(),
+      lastJudgment: this.lastJudgment,
     };
   }
 
@@ -286,19 +290,45 @@ export class Game {
     };
   }
 
+  getRank(): "S" | "A" | "B" | "C" | "D" {
+    const stats = this.scoreManager.getStats();
+
+    const total =
+        stats.perfect +
+        stats.good +
+        stats.bad +
+        stats.miss;
+
+    if (total === 0) return "D";
+
+    const accuracy =
+        (
+            stats.perfect * 1 +
+            stats.good * 0.75 +
+            stats.bad * 0.4
+        ) / total;
+
+    if (accuracy >= 0.95) return "S";
+    if (accuracy >= 0.85) return "A";
+    if (accuracy >= 0.70) return "B";
+    if (accuracy >= 0.50) return "C";
+
+    return "D";
+}
+
   isPlaying() {
     return this.state === "playing";
   }
 
   resetGame(){
     this.state = "idle";
-    this.lastJudment = null;
+    this.lastJudgment = null;
 
     this.judge.resetJudge();
     this.timeEngine.resetTime();
 
-    this.comboManager.resetCombo();
-    this.scoreManager = new ScoreManager();
+    this.comboManager.resetAll();
+    this.scoreManager = new ScoreManager(this.comboManager);
     this.noteManager.resetNoteManager();
   }
 }
